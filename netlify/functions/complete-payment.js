@@ -6,28 +6,33 @@ exports.handler = async function(event) {
     const paymentId = body.paymentId;
     const txid = body.txid;
 
+    const formData = new URLSearchParams();
+    formData.append("txid", txid);
+
     const response = await fetch(
       `https://api.minepi.com/v2/payments/${paymentId}/complete`,
       {
         method: "POST",
         headers: {
           Authorization: `Key ${process.env.PI_API_KEY}`,
-          "Content-Type": "application/json"
+          "Content-Type": "application/x-www-form-urlencoded"
         },
-        body: JSON.stringify({
-          txid: txid
-        })
+        body: formData.toString()
       }
     );
 
     const data = await response.json();
 
+    console.log("Complete payment response:", data);
+
     return {
-      statusCode: 200,
+      statusCode: response.status,
       body: JSON.stringify(data)
     };
 
   } catch (error) {
+
+    console.error("Complete payment error:", error);
 
     return {
       statusCode: 500,
