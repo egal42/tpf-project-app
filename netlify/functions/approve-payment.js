@@ -2,8 +2,14 @@ exports.handler = async function(event) {
 
   try {
 
+    console.log("approve-payment called");
+    console.log("event.body:", event.body);
+
     const body = JSON.parse(event.body);
     const paymentId = body.paymentId;
+
+    console.log("paymentId:", paymentId);
+    console.log("PI_API_KEY exists:", !!process.env.PI_API_KEY);
 
     const response = await fetch(
       `https://api.minepi.com/v2/payments/${paymentId}/approve`,
@@ -16,14 +22,19 @@ exports.handler = async function(event) {
       }
     );
 
-    const data = await response.json();
+    const text = await response.text();
+
+    console.log("Pi approve status:", response.status);
+    console.log("Pi approve response:", text);
 
     return {
-      statusCode: 200,
-      body: JSON.stringify(data)
+      statusCode: response.status,
+      body: text
     };
 
   } catch (error) {
+
+    console.error("Approve payment error:", error);
 
     return {
       statusCode: 500,
