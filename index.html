@@ -49,12 +49,20 @@
       gap: 1rem;
     }
 
+    button,
     a {
       text-decoration: none;
       padding: 1rem;
       border-radius: 14px;
       font-weight: bold;
       transition: 0.2s ease;
+      font-family: Georgia, serif;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    button {
+      border: none;
     }
 
     .primary {
@@ -68,14 +76,15 @@
       border: 1px solid rgba(255,255,255,0.08);
     }
 
+    button:hover,
     a:hover {
       transform: translateY(-2px);
       opacity: 0.95;
     }
 
     #status {
-      font-size: 0.85rem;
-      opacity: 0.7;
+      font-size: 0.9rem;
+      opacity: 0.82;
       margin-top: 1.2rem;
       margin-bottom: 0;
       word-break: break-word;
@@ -109,18 +118,18 @@
     </p>
 
     <p style="font-size:0.92rem; opacity:0.72; margin-top:-1rem;">
-      Best experienced inside Pi Browser.
+      Testnet preview. Best experienced inside Pi Browser.
     </p>
 
     <div class="buttons">
 
-      <a href="#" class="primary" id="loginBtn">
+      <button class="primary" id="loginBtn">
         Enter with Pi Login
-      </a>
+      </button>
 
-      <a href="https://thepioneerforest.netlify.app/" class="secondary">
-        Visit Website
-      </a>
+      <button class="primary" id="paymentBtn" disabled>
+        Test 0.01 Pi Support Flow
+      </button>
 
       <a href="https://fireside.pinet.com/channels/ThePioneerForest" class="secondary">
         TPF Fireside Updates
@@ -129,7 +138,7 @@
     </div>
 
     <p id="status">
-      Waiting for Pi login test.
+      Ready for Pi login.
     </p>
 
     <p style="font-size:0.8rem; opacity:0.55; margin-top:2rem; margin-bottom:0;">
@@ -140,43 +149,141 @@
 
   <script>
     const loginBtn = document.getElementById("loginBtn");
+    const paymentBtn = document.getElementById("paymentBtn");
     const statusEl = document.getElementById("status");
 
-    loginBtn.addEventListener("click", async function(event) {
-      event.preventDefault();
+    let currentUser = null;
 
-      alert("CLICK WORKS");
+    function getPaymentId(paymentData) {
+      if (typeof paymentData === "string") {
+        return paymentData;
+      }
 
-      statusEl.textContent = "Button clicked. Checking Pi SDK...";
+      if (paymentData && paymentData.identifier) {
+        return paymentData.identifier;
+      }
+
+      return paymentData;
+    }
+
+    loginBtn.addEventListener("click", async function() {
+      statusEl.textContent = "Starting Pi login...";
 
       try {
         if (!window.Pi) {
-          statusEl.textContent = "Pi SDK not available. Open inside Pi Browser / Pi Sandbox.";
-          alert("Pi SDK not available. Open inside Pi Browser / Pi Sandbox.");
+          statusEl.textContent = "Pi SDK not available. Please open this app inside Pi Browser.";
           return;
         }
 
-        statusEl.textContent = "Pi SDK found. Starting authentication...";
-
         const auth = await window.Pi.authenticate(
-          ["username"],
+          ["username", "payments"],
           function onIncompletePaymentFound(payment) {
             console.log("Incomplete payment found:", payment);
+            statusEl.textContent = "Incomplete payment found. Check console/logs.";
           }
         );
 
+        currentUser = auth.user;
+
         console.log("Authentication successful:", auth);
 
-        statusEl.textContent = "Logged in as: " + auth.user.username;
+        statusEl.textContent = "Welcome, @" + auth.user.username + " 🌱";
 
-        alert("Welcome " + auth.user.username);
+        loginBtn.textContent = "Logged in as @" + auth.user.username;
+        loginBtn.disabled = true;
+        loginBtn.style.opacity = "0.85";
+
+        paymentBtn.disabled = false;
 
       } catch (error) {
         console.error("Pi login error:", error);
-
         statusEl.textContent = "Pi login failed or was cancelled.";
+      }
+    });
 
-        alert("Pi login failed or was cancelled.");
+    paymentBtn.addEventListener("click", async function() {
+      if (!window.Pi) {
+        statusEl.textContent = "Pi SDK not available.";
+        return;
+      }
+
+      if (!currentUser) {
+        statusEl.textContent = "Please login with Pi first.";
+        return;
+      }
+
+      statusEl.textContent = "Creating Testnet payment...";
+
+      const paymentData = {
+        amount: 0.01,
+        memo: "TPF Testnet support flow",
+        metadata: {
+          app: "The Pioneer Forest Project",
+          type: "testnet_support_flow",
+          username: currentUser.username
+        }
+      };
+
+      const paymentCallbacks = {
+        onReadyForServerApproval: async function(paymentDTO) {
+          const paymentId = getPaymentId(paymentDTO);
+
+          statusEl.textContent = "Approving payment on server...";
+
+          const response = await fetch("/.netlify/functions/approve-payment", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              paymentId: paymentId
+            })
+          });
+
+          const data = await response.json();
+
+          console.log("Approval response:", data);
+        },
+
+        onReadyForServerCompletion: async function(paymentDTO, txid) {
+          const paymentId = getPaymentId(paymentDTO);
+
+          statusEl.textContent = "Completing payment on server...";
+
+          const response = await fetch("/.netlify/functions/complete-payment", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              paymentId: paymentId,
+              txid: txid
+            })
+          });
+
+          const data = await response.json();
+
+          console.log("Completion response:", data);
+
+          statusEl.textContent = "Testnet payment completed. Thank you, @" + currentUser.username + " 🌱";
+        },
+
+        onCancel: function(paymentDTO) {
+          console.log("Payment cancelled:", paymentDTO);
+          statusEl.textContent = "Payment cancelled.";
+        },
+
+        onError: function(error, paymentDTO) {
+          console.error("Payment error:", error, paymentDTO);
+          statusEl.textContent = "Payment error. Check logs.";
+        }
+      };
+
+      try {
+        window.Pi.createPayment(paymentData, paymentCallbacks);
+      } catch (error) {
+        console.error("Create payment error:", error);
+        statusEl.textContent = "Could not create payment.";
       }
     });
   </script>
