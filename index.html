@@ -305,20 +305,25 @@
       return paymentData;
     }
 
+    function withTimeout(promise, milliseconds, timeoutMessage) {
+      return Promise.race([
+        promise,
+        new Promise(function (_, reject) {
+          setTimeout(function () {
+            reject(new Error(timeoutMessage));
+          }, milliseconds);
+        })
+      ]);
+    }
+
     loginBtn.addEventListener("click", async function () {
-      showStatus("Checking Pi Browser...");
+      showStatus("Checking Pi login...");
       loginBtn.disabled = true;
 
       try {
-        // Stop immediately in normal browsers.
-        // Do this BEFORE calling Pi.authenticate, otherwise some browsers can hang.
-        if (
-          !window.Pi ||
-          typeof window.Pi.authenticate !== "function" ||
-          typeof window.Pi.createPayment !== "function"
-        ) {
+        if (!window.Pi || typeof window.Pi.authenticate !== "function") {
           browserWarning.classList.remove("hidden");
-          showStatus("Pi Login is only available in Pi Browser. Please open this app in Pi Browser.");
+          showStatus("Pi SDK not available. Please open this app inside Pi Browser.");
           loginBtn.textContent = "Pi Browser required";
           loginBtn.disabled = false;
           return;
@@ -326,12 +331,16 @@
 
         showStatus("Starting Pi login...");
 
-        const auth = await window.Pi.authenticate(
-          ["username", "payments"],
-          function onIncompletePaymentFound(payment) {
-            console.log("Incomplete payment found:", payment);
-            showStatus("Incomplete payment found. Check console/logs.");
-          }
+        const auth = await withTimeout(
+          window.Pi.authenticate(
+            ["username", "payments"],
+            function onIncompletePaymentFound(payment) {
+              console.log("Incomplete payment found:", payment);
+              showStatus("Incomplete payment found. Check console/logs.");
+            }
+          ),
+          8000,
+          "Pi login timed out."
         );
 
         if (!auth || !auth.user || !auth.user.username) {
@@ -349,7 +358,8 @@
       } catch (error) {
         console.error("Pi login error:", error);
         browserWarning.classList.remove("hidden");
-        showStatus("Pi login failed or was cancelled. Please try again inside Pi Browser.");
+        showStatus("Pi login failed or timed out. Please open this app inside Pi Browser and try again.");
+        loginBtn.textContent = "Enter with Pi Login";
         loginBtn.disabled = false;
       }
     });
