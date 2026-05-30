@@ -306,17 +306,25 @@
     }
 
     loginBtn.addEventListener("click", async function () {
-      showStatus("Starting Pi login...");
+      showStatus("Checking Pi Browser...");
       loginBtn.disabled = true;
 
       try {
-        // Important: check again when the user clicks.
-        // Some browsers may not expose the Pi SDK, or it may fail to load.
-        if (!isPiSdkAvailable()) {
-          showPiBrowserRequired();
+        // Stop immediately in normal browsers.
+        // Do this BEFORE calling Pi.authenticate, otherwise some browsers can hang.
+        if (
+          !window.Pi ||
+          typeof window.Pi.authenticate !== "function" ||
+          typeof window.Pi.createPayment !== "function"
+        ) {
+          browserWarning.classList.remove("hidden");
+          showStatus("Pi Login is only available in Pi Browser. Please open this app in Pi Browser.");
+          loginBtn.textContent = "Pi Browser required";
           loginBtn.disabled = false;
           return;
         }
+
+        showStatus("Starting Pi login...");
 
         const auth = await window.Pi.authenticate(
           ["username", "payments"],
