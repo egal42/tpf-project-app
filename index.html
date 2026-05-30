@@ -58,6 +58,58 @@
       box-shadow: 0 0 30px rgba(0,0,0,0.38);
     }
 
+    .tpf-logo {
+      width: 124px;
+      max-width: 38vw;
+      height: auto;
+      display: block;
+      margin: 0 auto 1.1rem;
+      filter: drop-shadow(0 0 14px rgba(212,175,55,0.16));
+    }
+
+    .amount-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+      margin-top: 0.8rem;
+    }
+
+    .amount-button.active {
+      background: var(--gold);
+      color: #111;
+      border-color: rgba(212,175,55,0.9);
+    }
+
+    .copy-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+
+    .wallet-box {
+      text-align: left;
+      background: rgba(0,0,0,0.24);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 0.9rem;
+      margin-top: 1rem;
+      font-size: 0.82rem;
+      line-height: 1.55;
+      color: var(--text-soft);
+      word-break: break-word;
+    }
+
+    @media (min-width: 620px) {
+      .amount-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .copy-row {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
     h1 {
       font-size: clamp(1.9rem, 6vw, 2.6rem);
       margin: 0 0 0.75rem;
@@ -329,6 +381,8 @@
 
     <!-- Login Screen -->
     <section id="loginScreen">
+      <img class="tpf-logo" src="assets/tpf-logo.png" alt="The Pioneer Forest logo" />
+
       <h1>The Pioneer Forest Project</h1>
 
       <p class="subtitle">
@@ -336,17 +390,25 @@
       </p>
 
       <p>
-        Not every journey begins with a destination.<br />
-        Some begin with a seed.
+        <em>Not every journey begins with a destination.<br />
+        Some begin with a seed.</em>
       </p>
 
       <p class="soft">
-        This is an early Testnet preview for Pi login and payment behavior testing.
+        Welcome to the Testnet preview of The Pioneer Forest.
+      </p>
+
+      <p class="soft">
+        This app is designed for Pi Browser and helps us test future features before Mainnet.
+      </p>
+
+      <p class="tiny">
+        Testnet only • No real Pi donations
       </p>
 
       <div id="browserWarning" class="warning hidden">
-        Pi Browser required.<br />
-        This app uses the Pi SDK. Please open it inside Pi Browser to login or test payments.
+        <strong>Pi Browser required.</strong><br />
+        This preview uses Pi Network login and Testnet payment features. Please open it inside Pi Browser to continue.
       </div>
 
       <div class="button-row">
@@ -366,6 +428,8 @@
 
     <!-- Logged-In App Screen -->
     <section id="appScreen" class="hidden">
+      <img class="tpf-logo" src="assets/tpf-logo.png" alt="The Pioneer Forest logo" />
+
       <h1>The Pioneer Forest</h1>
 
       <p class="welcome-name" id="welcomeName">
@@ -373,7 +437,11 @@
       </p>
 
       <p>
-        Welcome to The Pioneer Forest — a Pi-powered forest journey where community, transparency and real-world impact can grow together.
+        This is the Testnet Donation Lab.
+      </p>
+
+      <p class="soft">
+        Help us test notes, payment amounts, transaction visibility, and future participation flows.
       </p>
 
       <div class="danger">
@@ -384,58 +452,114 @@
         <h2>Testnet Donation Lab</h2>
 
         <p class="soft">
-          Each test sends <strong>0.01 Test Pi</strong> to the connected app wallet. After each payment, check the Testnet Block Explorer and compare the visible memo/note behavior.
+          Choose a Test Pi amount, set a note, and test how Pi SDK payments behave before any Mainnet logic is built.
         </p>
 
         <div class="notice">
-          Test goal: discover whether SDK payment <strong>memo</strong> appears in the wallet screen, Block Explorer, callback objects, or only in backend/API data.
+          Early result from testing: the note appears in the Pi Wallet confirmation screen, but Block Explorer may show a Pi-generated internal memo instead.
         </div>
 
-        <h3>Preset payment tests</h3>
+        <h3>1. Choose Test Pi amount</h3>
 
-        <div class="mini-grid">
-          <button class="secondary test-button" data-test-id="A" data-note="TPF">
-            Test A — Memo: TPF
-            <span>Short campaign label.</span>
+        <div class="amount-grid">
+          <button class="secondary amount-button active" data-amount="1">
+            1 Test Pi
           </button>
 
-          <button class="secondary test-button" data-test-id="B" data-note="ThePioneerForest">
-            Test B — Memo: ThePioneerForest
-            <span>Full campaign label.</span>
+          <button class="secondary amount-button" data-amount="3">
+            3 Test Pi
           </button>
 
-          <button class="secondary test-button" data-test-id="C" data-mode="username">
-            Test C — Memo: TPF @username
-            <span>Uses the logged-in Pi username.</span>
-          </button>
-
-          <button class="secondary test-button" data-test-id="E" data-note="TPF-LONG-NOTE-OVER-25-CHARS">
-            Test E — Long memo attempt
-            <span>Checks reject/truncate behavior.</span>
+          <button class="secondary amount-button" data-amount="5">
+            5 Test Pi
           </button>
         </div>
 
         <div class="input-wrap">
-          <label for="customNote">Custom note / memo test</label>
-          <input id="customNote" maxlength="25" value="Forest Test" autocomplete="off" />
+          <label for="customAmount">Or enter custom Test Pi amount</label>
+          <input id="customAmount" inputmode="decimal" placeholder="Example: 0.01" autocomplete="off" />
           <div class="char-row">
-            <span>Maximum enforced here: 25 characters.</span>
-            <span id="charCount">11/25</span>
+            <span>Leave empty to use the selected preset amount.</span>
+            <span id="selectedAmountLabel">Selected: 1 Test Pi</span>
+          </div>
+        </div>
+
+        <h3>2. Choose note / memo</h3>
+
+        <div class="mini-grid">
+          <button class="secondary note-button" data-note="TPF">
+            Note: TPF
+          </button>
+
+          <button class="secondary note-button" data-note="ThePioneerForest">
+            Note: ThePioneerForest
+          </button>
+
+          <button class="secondary note-button" data-mode="username">
+            Note: TPF @username
+          </button>
+
+          <button class="secondary note-button" data-note="Forest Test">
+            Note: Forest Test
+          </button>
+        </div>
+
+        <div class="input-wrap">
+          <label for="customNote">Custom note / memo — auto-filled after login</label>
+          <input id="customNote" maxlength="25" value="TPF" autocomplete="off" />
+          <div class="char-row">
+            <span>Default after login: TPF @username. Maximum enforced here: 25 characters.</span>
+            <span id="charCount">3/25</span>
           </div>
         </div>
 
         <div class="button-row">
-          <button class="primary test-button" id="customPaymentBtn">
-            Test D — Pay with custom note
-            <span>Uses the custom note as memo and metadata.note.</span>
+          <button class="primary test-button" id="sdkPaymentBtn">
+            Pay selected amount with Pi SDK
+            <span>Uses the note as SDK memo and metadata.note.</span>
           </button>
         </div>
 
         <p id="appStatus">
-          Logged in. Choose one Testnet payment test.
+          Logged in. Choose amount and note, then start a Testnet payment.
         </p>
 
         <div class="test-log" id="testLog">Test log will appear here.</div>
+
+        <section class="section">
+          <h2>Manual Wallet Test</h2>
+
+          <p class="soft">
+            This opens the Pi Wallet so you can manually send Test Pi to the app wallet and test whether a direct wallet note appears in Block Explorer.
+          </p>
+
+          <div class="wallet-box">
+            <strong>App Wallet:</strong><br />
+            <span id="walletAddress">GCUCDB7TYFZAKCL37BJODW3QPXKQZFSDRFW3U3MNSCT7GEMNDDQEXEGO</span><br /><br />
+            <strong>Suggested note:</strong><br />
+            <span id="manualNotePreview">TPF</span>
+          </div>
+
+          <div class="copy-row">
+            <button class="ghost" id="copyWalletBtn">
+              Copy app wallet
+            </button>
+
+            <button class="ghost" id="copyNoteBtn">
+              Copy current note
+            </button>
+          </div>
+
+          <div class="button-row">
+            <button class="secondary" id="openWalletBtn">
+              Open Pi Wallet for manual test
+            </button>
+          </div>
+
+          <p class="tiny">
+            Manual wallet payments are separate from Pi SDK app payments. The app cannot pre-fill the wallet transaction safely here; copy the wallet address and note yourself.
+          </p>
+        </section>
       </section>
 
       <section class="section">
@@ -466,24 +590,36 @@
   </main>
 
   <script>
+    const APP_WALLET = "GCUCDB7TYFZAKCL37BJODW3QPXKQZFSDRFW3U3MNSCT7GEMNDDQEXEGO";
+
     const loginScreen = document.getElementById("loginScreen");
     const appScreen = document.getElementById("appScreen");
 
     const loginBtn = document.getElementById("loginBtn");
-    const paymentBtn = document.getElementById("paymentBtn");
-    const customPaymentBtn = document.getElementById("customPaymentBtn");
-    const testButtons = document.querySelectorAll(".test-button[data-test-id]");
+    const sdkPaymentBtn = document.getElementById("sdkPaymentBtn");
+    const amountButtons = document.querySelectorAll(".amount-button");
+    const noteButtons = document.querySelectorAll(".note-button");
 
     const statusEl = document.getElementById("status");
     const appStatusEl = document.getElementById("appStatus");
     const browserWarning = document.getElementById("browserWarning");
     const welcomeName = document.getElementById("welcomeName");
+
+    const customAmount = document.getElementById("customAmount");
+    const selectedAmountLabel = document.getElementById("selectedAmountLabel");
     const customNote = document.getElementById("customNote");
     const charCount = document.getElementById("charCount");
     const testLog = document.getElementById("testLog");
 
+    const walletAddress = document.getElementById("walletAddress");
+    const manualNotePreview = document.getElementById("manualNotePreview");
+    const copyWalletBtn = document.getElementById("copyWalletBtn");
+    const copyNoteBtn = document.getElementById("copyNoteBtn");
+    const openWalletBtn = document.getElementById("openWalletBtn");
+
     let currentUser = null;
     let currentAccessToken = null;
+    let selectedAmount = 1;
     let activePaymentTest = null;
 
     function showStatus(message) {
@@ -530,14 +666,8 @@
     }
 
     function getPaymentId(paymentData) {
-      if (typeof paymentData === "string") {
-        return paymentData;
-      }
-
-      if (paymentData && paymentData.identifier) {
-        return paymentData.identifier;
-      }
-
+      if (typeof paymentData === "string") return paymentData;
+      if (paymentData && paymentData.identifier) return paymentData.identifier;
       return paymentData;
     }
 
@@ -552,34 +682,88 @@
       ]);
     }
 
-    function setPaymentButtonsDisabled(disabled) {
-      customPaymentBtn.disabled = disabled;
-      testButtons.forEach(function (button) {
-        button.disabled = disabled;
-      });
+    function setPaymentDisabled(disabled) {
+      sdkPaymentBtn.disabled = disabled;
+      amountButtons.forEach(function (button) { button.disabled = disabled; });
+      noteButtons.forEach(function (button) { button.disabled = disabled; });
     }
 
     function normalizeNote(value) {
       return String(value || "").trim();
     }
 
-    function updateCharCount() {
-      charCount.textContent = customNote.value.length + "/25";
+    function parseAmount() {
+      const custom = String(customAmount.value || "").trim().replace(",", ".");
+      if (custom) {
+        const parsed = Number(custom);
+        if (!Number.isFinite(parsed) || parsed <= 0) return null;
+        return Math.round(parsed * 10000000) / 10000000;
+      }
+      return selectedAmount;
     }
 
-    function buildNoteFromButton(button) {
-      const testId = button.getAttribute("data-test-id");
+    function updateSelectedAmountLabel() {
+      const amount = parseAmount();
+      if (amount === null) {
+        selectedAmountLabel.textContent = "Invalid custom amount";
+      } else {
+        selectedAmountLabel.textContent = "Selected: " + amount + " Test Pi";
+      }
+    }
+
+    function updateCharCount() {
+      charCount.textContent = customNote.value.length + "/25";
+      manualNotePreview.textContent = customNote.value || "TPF";
+    }
+
+    function selectAmount(button) {
+      amountButtons.forEach(function (btn) { btn.classList.remove("active"); });
+      button.classList.add("active");
+      selectedAmount = Number(button.getAttribute("data-amount"));
+      customAmount.value = "";
+      updateSelectedAmountLabel();
+    }
+
+    function buildUsernameNote() {
+      if (currentUser && currentUser.username) {
+        return ("TPF @" + currentUser.username).slice(0, 25);
+      }
+
+      return "TPF";
+    }
+
+    function autofillUsernameNote() {
+      customNote.value = buildUsernameNote();
+      updateCharCount();
+      logTest("Note auto-filled from Pi username", {
+        note: customNote.value,
+        maxLength: 25
+      });
+    }
+
+    function setNoteFromButton(button) {
       const mode = button.getAttribute("data-mode");
       const fixedNote = button.getAttribute("data-note");
 
-      if (mode === "username") {
-        return "TPF @" + currentUser.username;
+      if (mode === "username" && currentUser) {
+        customNote.value = buildUsernameNote();
+      } else {
+        customNote.value = (fixedNote || "TPF").slice(0, 25);
       }
 
-      return fixedNote || ("TPF Test " + testId);
+      updateCharCount();
     }
 
-    async function createTestPayment(testId, note) {
+    async function copyText(value, label) {
+      try {
+        await navigator.clipboard.writeText(value);
+        showAppStatus(label + " copied.");
+      } catch (error) {
+        showAppStatus("Copy failed. Select and copy manually.");
+      }
+    }
+
+    async function createSdkPayment() {
       if (!isPiSdkAvailable()) {
         showAppStatus("Pi SDK not available. Please open this app inside Pi Browser.");
         return;
@@ -590,7 +774,13 @@
         return;
       }
 
-      const userNote = normalizeNote(note);
+      const amount = parseAmount();
+      const userNote = normalizeNote(customNote.value);
+
+      if (amount === null) {
+        showAppStatus("Please enter a valid amount.");
+        return;
+      }
 
       if (!userNote) {
         showAppStatus("Please enter or select a note first.");
@@ -598,26 +788,27 @@
       }
 
       activePaymentTest = {
-        testId: testId,
+        amount: amount,
         note: userNote,
         username: currentUser.username,
         startedAt: new Date().toISOString()
       };
 
-      setPaymentButtonsDisabled(true);
-      showAppStatus("Creating Testnet payment " + testId + " with memo: " + userNote);
-      logTest("Starting payment test " + testId, activePaymentTest);
+      setPaymentDisabled(true);
+      showAppStatus("Creating Testnet SDK payment: " + amount + " Test Pi / note: " + userNote);
+      logTest("Starting SDK payment", activePaymentTest);
 
       const paymentData = {
-        amount: 0.01,
+        amount: amount,
         memo: userNote,
         metadata: {
           app: "The Pioneer Forest Project",
           type: "testnet_donation_lab",
-          testId: testId,
+          paymentMode: "sdk_user_to_app",
           username: currentUser.username,
           note: userNote,
-          noteLength: userNote.length
+          noteLength: userNote.length,
+          selectedAmount: amount
         }
       };
 
@@ -625,8 +816,8 @@
         onReadyForServerApproval: async function (paymentDTO) {
           const paymentId = getPaymentId(paymentDTO);
 
-          showAppStatus("Approving payment " + testId + " on server...");
-          logTest("onReadyForServerApproval " + testId, {
+          showAppStatus("Approving payment on server...");
+          logTest("onReadyForServerApproval", {
             paymentId: paymentId,
             rawPaymentDTO: paymentDTO,
             activePaymentTest: activePaymentTest
@@ -634,12 +825,10 @@
 
           const response = await fetch("/.netlify/functions/approve-payment", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               paymentId: paymentId,
-              testId: testId,
+              amount: amount,
               note: userNote,
               username: currentUser.username
             })
@@ -647,14 +836,14 @@
 
           const data = await response.json();
           console.log("Approval response:", data);
-          logTest("Approval response " + testId, data);
+          logTest("Approval response", data);
         },
 
         onReadyForServerCompletion: async function (paymentDTO, txid) {
           const paymentId = getPaymentId(paymentDTO);
 
-          showAppStatus("Completing payment " + testId + " on server...");
-          logTest("onReadyForServerCompletion " + testId, {
+          showAppStatus("Completing payment on server...");
+          logTest("onReadyForServerCompletion", {
             paymentId: paymentId,
             txid: txid,
             rawPaymentDTO: paymentDTO,
@@ -663,13 +852,11 @@
 
           const response = await fetch("/.netlify/functions/complete-payment", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               paymentId: paymentId,
               txid: txid,
-              testId: testId,
+              amount: amount,
               note: userNote,
               username: currentUser.username
             })
@@ -677,28 +864,28 @@
 
           const data = await response.json();
           console.log("Completion response:", data);
-          logTest("Completion response " + testId, data);
+          logTest("Completion response", data);
 
-          showAppStatus("Test " + testId + " completed. Now check Block Explorer for memo/note behavior.");
-          setPaymentButtonsDisabled(false);
+          showAppStatus("SDK payment completed. Check Wallet screen result, Block Explorer, and Netlify logs.");
+          setPaymentDisabled(false);
         },
 
         onCancel: function (paymentDTO) {
           console.log("Payment cancelled:", paymentDTO);
-          logTest("Payment cancelled " + testId, paymentDTO);
-          showAppStatus("Payment " + testId + " cancelled.");
-          setPaymentButtonsDisabled(false);
+          logTest("Payment cancelled", paymentDTO);
+          showAppStatus("Payment cancelled.");
+          setPaymentDisabled(false);
         },
 
         onError: function (error, paymentDTO) {
           console.error("Payment error:", error, paymentDTO);
-          logTest("Payment error " + testId, {
+          logTest("Payment error", {
             error: error && error.message ? error.message : error,
             paymentDTO: paymentDTO,
             activePaymentTest: activePaymentTest
           });
-          showAppStatus("Payment " + testId + " error. Check logs.");
-          setPaymentButtonsDisabled(false);
+          showAppStatus("Payment error. Check logs.");
+          setPaymentDisabled(false);
         }
       };
 
@@ -706,9 +893,9 @@
         window.Pi.createPayment(paymentData, paymentCallbacks);
       } catch (error) {
         console.error("Create payment error:", error);
-        logTest("Create payment failed " + testId, error && error.message ? error.message : error);
-        showAppStatus("Could not create payment " + testId + ".");
-        setPaymentButtonsDisabled(false);
+        logTest("Create payment failed", error && error.message ? error.message : error);
+        showAppStatus("Could not create payment.");
+        setPaymentDisabled(false);
       }
     }
 
@@ -767,6 +954,7 @@
           username: auth.user.username,
           hasAccessToken: !!currentAccessToken
         });
+        autofillUsernameNote();
 
       } catch (error) {
         console.error("Pi login error:", error);
@@ -777,23 +965,43 @@
       }
     });
 
-    testButtons.forEach(function (button) {
+    amountButtons.forEach(function (button) {
       button.addEventListener("click", function () {
-        const testId = button.getAttribute("data-test-id");
-        const note = buildNoteFromButton(button);
-        createTestPayment(testId, note);
+        selectAmount(button);
       });
     });
 
-    customPaymentBtn.addEventListener("click", function () {
-      createTestPayment("D", customNote.value);
+    noteButtons.forEach(function (button) {
+      button.addEventListener("click", function () {
+        setNoteFromButton(button);
+      });
     });
 
+    customAmount.addEventListener("input", updateSelectedAmountLabel);
     customNote.addEventListener("input", updateCharCount);
+    sdkPaymentBtn.addEventListener("click", createSdkPayment);
+
+    copyWalletBtn.addEventListener("click", function () {
+      copyText(APP_WALLET, "App wallet");
+    });
+
+    copyNoteBtn.addEventListener("click", function () {
+      copyText(customNote.value || "TPF", "Current note");
+    });
+
+    openWalletBtn.addEventListener("click", function () {
+      logTest("Opening Pi Wallet for manual test", {
+        wallet: APP_WALLET,
+        suggestedNote: customNote.value || "TPF"
+      });
+      window.location.href = "https://wallet.pinet.com";
+    });
+
+    walletAddress.textContent = APP_WALLET;
     updateCharCount();
+    updateSelectedAmountLabel();
 
     window.addEventListener("load", function () {
-      // Delayed check: gives the Pi SDK script time to load if it can.
       setTimeout(function () {
         if (!isPiSdkAvailable()) {
           showPiBrowserRequired();
@@ -801,6 +1009,7 @@
       }, 1000);
     });
   </script>
+
 
 </body>
 </html>
