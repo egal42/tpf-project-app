@@ -7,87 +7,302 @@
   <title>The Pioneer Forest Project</title>
 
   <style>
+    :root {
+      --forest-dark: #03170d;
+      --forest-mid: #0f5a32;
+      --forest-soft: rgba(20, 82, 47, 0.42);
+      --gold: #d4af37;
+      --gold-soft: rgba(212, 175, 55, 0.18);
+      --text: #f2efe6;
+      --muted: rgba(242, 239, 230, 0.76);
+      --line: rgba(255, 255, 255, 0.1);
+      --card: rgba(0, 0, 0, 0.28);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
       margin: 0;
       min-height: 100vh;
       background:
-        linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.75)),
-        radial-gradient(circle at top, #0f5a32 0%, #03170d 70%);
-      color: #f2efe6;
-      font-family: Georgia, serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+        linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.82)),
+        radial-gradient(circle at top left, rgba(212,175,55,0.18), transparent 30%),
+        radial-gradient(circle at top, #0f5a32 0%, #03170d 72%);
+      color: var(--text);
+      font-family: Georgia, "Times New Roman", serif;
       text-align: center;
-      padding: 2rem;
+      padding: 1.2rem;
     }
 
-    .card {
-      max-width: 520px;
-      background: rgba(0, 0, 0, 0.28);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 24px;
-      padding: 3rem 2rem;
-      backdrop-filter: blur(4px);
-      box-shadow: 0 0 30px rgba(0,0,0,0.35);
+    a {
+      color: inherit;
+    }
+
+    .app-shell {
+      width: min(920px, 100%);
+      margin: 0 auto;
+      padding: 1rem 0 3rem;
+    }
+
+    .hero,
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      backdrop-filter: blur(5px);
+      box-shadow: 0 0 34px rgba(0,0,0,0.34);
+    }
+
+    .hero {
+      min-height: calc(100vh - 2.4rem);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 3.2rem 1.5rem;
+    }
+
+    .logo-mark {
+      width: 78px;
+      height: 78px;
+      margin: 0 auto 1.2rem;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--gold-soft);
+      border: 1px solid rgba(212, 175, 55, 0.32);
+      box-shadow: 0 0 32px rgba(212, 175, 55, 0.12);
+      font-size: 2.2rem;
     }
 
     h1 {
-      font-size: 2.4rem;
-      margin-bottom: 1rem;
+      font-size: clamp(2.2rem, 9vw, 4.6rem);
+      line-height: 1;
+      margin: 0 0 0.9rem;
+      letter-spacing: -0.04em;
+    }
+
+    h2 {
+      font-size: clamp(1.55rem, 6vw, 2.45rem);
+      line-height: 1.1;
+      margin: 0 0 1rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      margin: 0 0 0.8rem;
     }
 
     p {
-      line-height: 1.7;
-      opacity: 0.92;
-      margin-bottom: 2rem;
+      line-height: 1.72;
+      opacity: 0.93;
+      margin: 0 auto 1.35rem;
+      max-width: 680px;
     }
 
-    .buttons {
+    .subtitle {
+      color: var(--gold);
+      font-size: 1.05rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 1.4rem;
+    }
+
+    .quiet {
+      color: var(--muted);
+      font-size: 0.93rem;
+    }
+
+    .buttons,
+    .preset-row {
       display: flex;
-      flex-direction: column;
-      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.8rem;
+      margin-top: 1.2rem;
     }
 
     button,
-    a {
+    .button-link {
       text-decoration: none;
-      padding: 1rem;
-      border-radius: 14px;
+      padding: 0.95rem 1.15rem;
+      border-radius: 15px;
       font-weight: bold;
-      transition: 0.2s ease;
-      font-family: Georgia, serif;
+      transition: 0.18s ease;
+      font-family: Georgia, "Times New Roman", serif;
       font-size: 1rem;
       cursor: pointer;
+      min-height: 48px;
     }
 
     button {
       border: none;
     }
 
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+      transform: none !important;
+    }
+
     .primary {
-      background: #d4af37;
+      background: var(--gold);
       color: #111;
     }
 
     .secondary {
       background: rgba(255,255,255,0.08);
-      color: #f2efe6;
-      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .ghost {
+      background: rgba(212, 175, 55, 0.1);
+      color: var(--text);
+      border: 1px solid rgba(212, 175, 55, 0.22);
     }
 
     button:hover,
-    a:hover {
+    .button-link:hover {
       transform: translateY(-2px);
-      opacity: 0.95;
+      opacity: 0.96;
+    }
+
+    .panel {
+      padding: 2rem 1.35rem;
+      margin-top: 1rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+      margin-top: 1.4rem;
+    }
+
+    .mini-card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 1.15rem;
+      text-align: left;
+    }
+
+    .mini-card p {
+      margin-bottom: 0;
+      font-size: 0.95rem;
+    }
+
+    .donation-box {
+      max-width: 640px;
+      margin: 1.4rem auto 0;
+      text-align: left;
+      background: rgba(255,255,255,0.055);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 20px;
+      padding: 1.2rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.45rem;
+      font-weight: bold;
+      color: var(--text);
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: 0.95rem;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(0,0,0,0.24);
+      color: var(--text);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: rgba(212, 175, 55, 0.55);
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+    }
+
+    .field {
+      margin-bottom: 1rem;
+    }
+
+    .preset-row {
+      justify-content: flex-start;
+      margin: 0.2rem 0 1rem;
+    }
+
+    .preset-row button {
+      padding: 0.7rem 0.8rem;
+      min-height: 40px;
+      font-size: 0.92rem;
     }
 
     #status {
-      font-size: 0.9rem;
-      opacity: 0.82;
+      font-size: 0.92rem;
+      opacity: 0.88;
       margin-top: 1.2rem;
       margin-bottom: 0;
       word-break: break-word;
+      text-align: center;
+    }
+
+    .result-box {
+      display: none;
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 16px;
+      background: rgba(15, 90, 50, 0.25);
+      border: 1px solid rgba(212, 175, 55, 0.24);
+      font-size: 0.92rem;
+      line-height: 1.55;
+      word-break: break-word;
+    }
+
+    .footer-note {
+      font-size: 0.82rem;
+      opacity: 0.58;
+      margin-top: 1.8rem;
+      margin-bottom: 0;
+    }
+
+    @media (max-width: 720px) {
+      body {
+        padding: 0.8rem;
+      }
+
+      .hero {
+        min-height: calc(100vh - 1.6rem);
+        padding: 2.4rem 1rem;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .buttons {
+        flex-direction: column;
+      }
+
+      button,
+      .button-link {
+        width: 100%;
+      }
+
+      .preset-row button {
+        width: auto;
+      }
     }
   </style>
 
@@ -108,51 +323,128 @@
 </head>
 
 <body>
+  <main class="app-shell">
 
-  <div class="card">
-    <h1>The Pioneer Forest Project</h1>
+    <section class="hero" id="welcome">
+      <div class="logo-mark">🌳</div>
+      <div class="subtitle">Pi-powered forest journeys</div>
+      <h1>The Pioneer Forest</h1>
+      <p>
+        Not every journey begins with a destination. Some begin with a seed.
+        The Pioneer Forest explores how Pi, community and transparency can grow
+        into real-world impact — one careful step at a time.
+      </p>
+      <p class="quiet">
+        Testnet prototype. Best experienced inside Pi Browser.
+      </p>
+      <div class="buttons">
+        <a class="button-link primary" href="#donation-lab">Enter the Forest</a>
+        <a class="button-link secondary" href="#about">What is TPF?</a>
+      </div>
+    </section>
 
-    <p>
-      A Pi-powered reforestation project focused on
-      transparency, real-world impact, and growing forest journeys.
-    </p>
+    <section class="panel" id="about">
+      <h2>About The Pioneer Forest</h2>
+      <p>
+        The Pioneer Forest is a community-driven project exploring reforestation,
+        transparent impact tracking, participation and storytelling inside the Pi ecosystem.
+      </p>
+      <div class="grid">
+        <div class="mini-card">
+          <h3>🌱 Real impact</h3>
+          <p>TPF connects symbolic Pi participation with real-world environmental action.</p>
+        </div>
+        <div class="mini-card">
+          <h3>🔎 Transparency</h3>
+          <p>Updates, records and future app tools are built around visible, traceable progress.</p>
+        </div>
+        <div class="mini-card">
+          <h3>🎧 Forest music</h3>
+          <p>Music, stories and atmosphere are part of the journey, not just decoration.</p>
+        </div>
+        <div class="mini-card">
+          <h3>π Pi-native path</h3>
+          <p>This Developer Portal app is the future main TPF app, starting safely on Testnet.</p>
+        </div>
+      </div>
+    </section>
 
-    <p style="font-size:0.92rem; opacity:0.72; margin-top:-1rem;">
-      Testnet preview. Best experienced inside Pi Browser.
-    </p>
+    <section class="panel" id="music">
+      <h2>Forest Music</h2>
+      <p>
+        First forest signal:
+        <strong>I Dreamed a Forest — Awakening</strong>
+      </p>
+      <p class="quiet">
+        Music will become part of the TPF experience: atmosphere, memory and meaning around the forest journey.
+      </p>
+      <div class="buttons">
+        <a class="button-link secondary" href="https://fireside.pinet.com/channels/ThePioneerForest">
+          TPF Fireside Updates
+        </a>
+      </div>
+    </section>
 
-    <div class="buttons">
+    <section class="panel" id="donation-lab">
+      <h2>Testnet Donation Lab</h2>
+      <p>
+        This is not a real donation system yet. It is a Testnet lab to verify Pi login,
+        payment notes, metadata and the future TPF support flow.
+      </p>
 
-      <button class="primary" id="loginBtn">
-        Enter with Pi Login
-      </button>
+      <div class="donation-box">
+        <div class="field">
+          <label for="amountInput">Amount</label>
+          <input id="amountInput" type="text" value="0.01 Test Pi" disabled />
+        </div>
 
-      <button class="primary" id="paymentBtn" disabled>
-        Test 0.01 Pi Support Flow
-      </button>
+        <div class="field">
+          <label for="noteInput">Test Note</label>
+          <textarea id="noteInput" rows="3" maxlength="80" placeholder="Example: TPF, ThePioneerForest, Forest Test..."></textarea>
+          <p class="quiet" style="margin:0.45rem 0 0; font-size:0.84rem;">
+            This note is tested as payment memo and metadata. Keep it short.
+          </p>
+        </div>
 
-      <a href="https://fireside.pinet.com/channels/ThePioneerForest" class="secondary">
-        TPF Fireside Updates
-      </a>
+        <div class="preset-row" aria-label="Preset notes">
+          <button class="ghost preset-btn" type="button" data-note="TPF">TPF</button>
+          <button class="ghost preset-btn" type="button" data-note="ThePioneerForest">ThePioneerForest</button>
+          <button class="ghost preset-btn" type="button" data-note="Forest Test">Forest Test</button>
+          <button class="ghost preset-btn" type="button" data-note="TPF Testnet Lab">TPF Testnet Lab</button>
+        </div>
 
-    </div>
+        <div class="buttons" style="margin-top:0.8rem;">
+          <button class="primary" id="loginBtn" type="button">
+            Enter with Pi Login
+          </button>
 
-    <p id="status">
-      Ready for Pi login.
-    </p>
+          <button class="primary" id="paymentBtn" type="button" disabled>
+            Send 0.01 Test Pi
+          </button>
+        </div>
 
-    <p style="font-size:0.8rem; opacity:0.55; margin-top:2rem; margin-bottom:0;">
-      Development preview — Testnet phase
-    </p>
+        <p id="status">Ready for Pi login.</p>
 
-  </div>
+        <div class="result-box" id="resultBox"></div>
+      </div>
+
+      <p class="footer-note">
+        Development preview — Pi Testnet phase. No Mainnet donations here yet.
+      </p>
+    </section>
+
+  </main>
 
   <script>
     const loginBtn = document.getElementById("loginBtn");
     const paymentBtn = document.getElementById("paymentBtn");
     const statusEl = document.getElementById("status");
+    const noteInput = document.getElementById("noteInput");
+    const resultBox = document.getElementById("resultBox");
+    const presetButtons = document.querySelectorAll(".preset-btn");
 
     let currentUser = null;
+    let lastPaymentInfo = null;
 
     function getPaymentId(paymentData) {
       if (typeof paymentData === "string") {
@@ -166,8 +458,32 @@
       return paymentData;
     }
 
+    function cleanNote(note) {
+      const cleaned = String(note || "").trim().replace(/\s+/g, " ");
+      return cleaned || "TPF Testnet support flow";
+    }
+
+    function showResult(html) {
+      resultBox.innerHTML = html;
+      resultBox.style.display = "block";
+    }
+
+    presetButtons.forEach(function(button) {
+      button.addEventListener("click", function() {
+        let note = button.getAttribute("data-note") || "";
+
+        if (note === "@username") {
+          note = currentUser ? "@" + currentUser.username : "@username";
+        }
+
+        noteInput.value = note;
+        statusEl.textContent = "Selected note: " + note;
+      });
+    });
+
     loginBtn.addEventListener("click", async function() {
       statusEl.textContent = "Starting Pi login...";
+      resultBox.style.display = "none";
 
       try {
         if (!window.Pi) {
@@ -212,17 +528,27 @@
         return;
       }
 
-      statusEl.textContent = "Creating Testnet payment...";
+      const userNote = cleanNote(noteInput.value);
+      const testAmount = 0.01;
+
+      statusEl.textContent = "Creating Testnet payment with note: " + userNote;
+      resultBox.style.display = "none";
 
       const paymentData = {
-        amount: 0.01,
-        memo: "TPF Testnet support flow",
+        amount: testAmount,
+        memo: userNote,
         metadata: {
           app: "The Pioneer Forest Project",
-          type: "testnet_support_flow",
-          username: currentUser.username
+          type: "testnet_donation_lab",
+          username: currentUser.username,
+          note: userNote,
+          amount: testAmount,
+          phase: "v0.2"
         }
       };
+
+      lastPaymentInfo = paymentData;
+      console.log("Payment data:", paymentData);
 
       const paymentCallbacks = {
         onReadyForServerApproval: async function(paymentDTO) {
@@ -266,16 +592,27 @@
           console.log("Completion response:", data);
 
           statusEl.textContent = "Testnet payment completed. Thank you, @" + currentUser.username + " 🌱";
+
+          showResult(
+            "<strong>Payment completed.</strong><br>" +
+            "User: @" + currentUser.username + "<br>" +
+            "Amount: " + testAmount + " Test Pi<br>" +
+            "Note: " + userNote + "<br>" +
+            "Payment ID: " + paymentId + "<br>" +
+            "TXID: " + txid
+          );
         },
 
         onCancel: function(paymentDTO) {
           console.log("Payment cancelled:", paymentDTO);
           statusEl.textContent = "Payment cancelled.";
+          showResult("Payment was cancelled before completion.");
         },
 
         onError: function(error, paymentDTO) {
           console.error("Payment error:", error, paymentDTO);
           statusEl.textContent = "Payment error. Check logs.";
+          showResult("Payment error. Check Pi Browser and Netlify logs.");
         }
       };
 
@@ -284,6 +621,7 @@
       } catch (error) {
         console.error("Create payment error:", error);
         statusEl.textContent = "Could not create payment.";
+        showResult("Could not create payment. Open inside Pi Browser and try again.");
       }
     });
   </script>
