@@ -16,6 +16,8 @@
       --gold-soft: rgba(212, 175, 55, 0.18);
       --card-bg: rgba(0, 0, 0, 0.30);
       --card-border: rgba(255, 255, 255, 0.08);
+      --warn-bg: rgba(212, 175, 55, 0.12);
+      --warn-border: rgba(212, 175, 55, 0.35);
     }
 
     * {
@@ -83,6 +85,17 @@
       line-height: 1.6;
     }
 
+    .warning {
+      background: var(--warn-bg);
+      border: 1px solid var(--warn-border);
+      border-radius: 16px;
+      padding: 1rem;
+      margin: 1.4rem 0;
+      color: var(--text-main);
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+
     .button-row {
       display: flex;
       flex-direction: column;
@@ -123,10 +136,9 @@
     }
 
     #status,
-    #appStatus,
-    #browserStatus {
+    #appStatus {
       font-size: 0.9rem;
-      opacity: 0.85;
+      opacity: 0.88;
       margin-top: 1.25rem;
       margin-bottom: 0;
       word-break: break-word;
@@ -173,33 +185,8 @@
 
   <main class="card">
 
-    <!-- Browser Required Screen -->
-    <section id="browserRequiredScreen" class="hidden">
-      <h1>Pi Browser Required</h1>
-
-      <p class="subtitle">
-        The Pioneer Forest Project
-      </p>
-
-      <p>
-        This app uses the Pi SDK and can only be used properly inside Pi Browser.
-      </p>
-
-      <p class="soft">
-        Please open this app in Pi Browser and try again.
-      </p>
-
-      <p id="browserStatus">
-        Pi SDK is not available in this browser.
-      </p>
-
-      <p class="footer-note">
-        Development preview — Testnet phase
-      </p>
-    </section>
-
     <!-- Login Screen -->
-    <section id="loginScreen" class="hidden">
+    <section id="loginScreen">
       <h1>The Pioneer Forest Project</h1>
 
       <p class="subtitle">
@@ -207,8 +194,13 @@
       </p>
 
       <p class="soft">
-        This is an early Testnet preview. Please open this app inside Pi Browser.
+        This is an early Testnet preview.
       </p>
+
+      <div id="browserWarning" class="warning hidden">
+        Pi Browser required.<br />
+        This app uses the Pi SDK. Please open it inside Pi Browser to login or test payments.
+      </div>
 
       <div class="button-row">
         <button class="primary" id="loginBtn">
@@ -264,7 +256,6 @@
   </main>
 
   <script>
-    const browserRequiredScreen = document.getElementById("browserRequiredScreen");
     const loginScreen = document.getElementById("loginScreen");
     const appScreen = document.getElementById("appScreen");
 
@@ -273,33 +264,10 @@
 
     const statusEl = document.getElementById("status");
     const appStatusEl = document.getElementById("appStatus");
-    const browserStatusEl = document.getElementById("browserStatus");
+    const browserWarning = document.getElementById("browserWarning");
     const welcomeName = document.getElementById("welcomeName");
 
     let currentUser = null;
-
-    function hideAllScreens() {
-      browserRequiredScreen.classList.add("hidden");
-      loginScreen.classList.add("hidden");
-      appScreen.classList.add("hidden");
-    }
-
-    function showBrowserRequired(message) {
-      hideAllScreens();
-      browserRequiredScreen.classList.remove("hidden");
-      browserStatusEl.textContent = message || "Pi SDK is not available in this browser.";
-    }
-
-    function showLoginScreen() {
-      hideAllScreens();
-      loginScreen.classList.remove("hidden");
-    }
-
-    function showLoggedInScreen(username) {
-      welcomeName.textContent = "Welcome @" + username + " 🌱";
-      hideAllScreens();
-      appScreen.classList.remove("hidden");
-    }
 
     function showStatus(message) {
       statusEl.textContent = message;
@@ -311,6 +279,18 @@
 
     function isPiSdkAvailable() {
       return !!window.Pi;
+    }
+
+    function showPiBrowserRequired() {
+      browserWarning.classList.remove("hidden");
+      showStatus("Pi SDK not available. Please open this app inside Pi Browser.");
+      loginBtn.textContent = "Open in Pi Browser required";
+    }
+
+    function showLoggedInScreen(username) {
+      welcomeName.textContent = "Welcome @" + username + " 🌱";
+      loginScreen.classList.add("hidden");
+      appScreen.classList.remove("hidden");
     }
 
     function getPaymentId(paymentData) {
@@ -330,9 +310,10 @@
       loginBtn.disabled = true;
 
       try {
-        // Second check on click, because SDK/browser detection may vary.
+        // Important: check again when the user clicks.
+        // Some browsers may not expose the Pi SDK, or it may fail to load.
         if (!isPiSdkAvailable()) {
-          showBrowserRequired("Pi SDK is not available. Please open this app inside Pi Browser.");
+          showPiBrowserRequired();
           loginBtn.disabled = false;
           return;
         }
@@ -346,7 +327,7 @@
         );
 
         if (!auth || !auth.user || !auth.user.username) {
-          showStatus("Pi login did not return a username. Please try again.");
+          showStatus("Pi login did not return a username. Please try again inside Pi Browser.");
           loginBtn.disabled = false;
           return;
         }
@@ -359,6 +340,7 @@
 
       } catch (error) {
         console.error("Pi login error:", error);
+        browserWarning.classList.remove("hidden");
         showStatus("Pi login failed or was cancelled. Please try again inside Pi Browser.");
         loginBtn.disabled = false;
       }
@@ -366,7 +348,7 @@
 
     paymentBtn.addEventListener("click", async function () {
       if (!isPiSdkAvailable()) {
-        showBrowserRequired("Pi SDK is not available. Please open this app inside Pi Browser.");
+        showAppStatus("Pi SDK not available. Please open this app inside Pi Browser.");
         return;
       }
 
@@ -456,14 +438,12 @@
     });
 
     window.addEventListener("load", function () {
-      // Small delay gives the external Pi SDK script a moment to become available.
+      // Delayed check: gives the Pi SDK script time to load if it can.
       setTimeout(function () {
-        if (isPiSdkAvailable()) {
-          showLoginScreen();
-        } else {
-          showBrowserRequired("Pi SDK is not available. Please open this app inside Pi Browser.");
+        if (!isPiSdkAvailable()) {
+          showPiBrowserRequired();
         }
-      }, 600);
+      }, 1000);
     });
   </script>
 
