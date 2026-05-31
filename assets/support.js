@@ -352,10 +352,10 @@ sdkPaymentBtn.addEventListener("click", createSdkPayment);
 updateSelectedAmountLabel();
 
 window.addEventListener("load", function () {
-  const storedUsername = window.TPF.getUsername();
+  const sessionUsername = window.TPF.getUsername();
 
-  if (storedUsername) {
-    showAppStatus("Logged in as @" + storedUsername + ". Choose an amount, then send Test Pi.");
+  if (sessionUsername) {
+    showAppStatus("Logged in as @" + sessionUsername + ". Choose an amount, then send Test Pi.");
   } else {
     showAppStatus("Please login from the Home page first.");
   }

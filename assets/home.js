@@ -111,11 +111,14 @@ loginBtn.addEventListener("click", async function () {
 });
 
 window.addEventListener("load", function () {
-  const username = window.TPF.getUsername();
+  // Correct behavior for Testnet milestone:
+  // Reload should not pretend the user is still logged in.
+  sessionStorage.removeItem(window.TPF.sessionUsernameKey);
 
-  if (username) {
-    showLoggedIn(username);
-  } else if (signOutBtn) {
+  loginScreen.classList.remove("hidden");
+  homeScreen.classList.add("hidden");
+
+  if (signOutBtn) {
     signOutBtn.classList.add("hidden");
   }
 

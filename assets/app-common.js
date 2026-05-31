@@ -1,36 +1,44 @@
-/* TPF App V0.8 Common Helpers */
+/* TPF App V0.8.2 Common Helpers
+   Correct behavior:
+   - We do NOT persist fake login state across reloads.
+   - Pi Login is required each app session.
+   - We keep only last username for local history lookup.
+*/
 (function () {
-  const USERNAME_KEY = "tpf_username";
-  const LOGIN_KEY = "tpf_last_login";
+  const LAST_USERNAME_KEY = "tpf_last_username";
+  const SESSION_USERNAME_KEY = "tpf_session_username";
   const HISTORY_PREFIX = "tpf_testnet_history_";
 
   window.TPF = {
-    usernameKey: USERNAME_KEY,
-    loginKey: LOGIN_KEY,
+    lastUsernameKey: LAST_USERNAME_KEY,
+    sessionUsernameKey: SESSION_USERNAME_KEY,
     historyPrefix: HISTORY_PREFIX,
 
     getUsername() {
-      return localStorage.getItem(USERNAME_KEY) || "";
+      return sessionStorage.getItem(SESSION_USERNAME_KEY) || "";
+    },
+
+    getLastUsername() {
+      return localStorage.getItem(LAST_USERNAME_KEY) || "";
     },
 
     isLoggedIn() {
-      return !!localStorage.getItem(USERNAME_KEY);
+      return !!sessionStorage.getItem(SESSION_USERNAME_KEY);
     },
 
     saveSession(username) {
       if (!username) return;
-      localStorage.setItem(USERNAME_KEY, username);
-      localStorage.setItem(LOGIN_KEY, new Date().toISOString());
+      sessionStorage.setItem(SESSION_USERNAME_KEY, username);
+      localStorage.setItem(LAST_USERNAME_KEY, username);
     },
 
     signOut() {
-      localStorage.removeItem(USERNAME_KEY);
-      localStorage.removeItem(LOGIN_KEY);
+      sessionStorage.removeItem(SESSION_USERNAME_KEY);
       window.location.href = "index.html";
     },
 
     historyKey(username) {
-      return HISTORY_PREFIX + (username || this.getUsername() || "unknown");
+      return HISTORY_PREFIX + (username || this.getUsername() || this.getLastUsername() || "unknown");
     },
 
     loadHistory(username) {

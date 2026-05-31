@@ -3,18 +3,25 @@ const historyList = document.getElementById("historyList");
 const clearHistoryBtn = document.getElementById("clearHistoryBtn");
 const profileName = document.getElementById("profileName");
 
-function renderHistory() {
-  const username = window.TPF.getUsername();
+function activeHistoryUsername() {
+  return window.TPF.getUsername() || window.TPF.getLastUsername();
+}
 
-  if (username) {
-    profileName.textContent = "Welcome @" + username + " 🌱";
+function renderHistory() {
+  const sessionUsername = window.TPF.getUsername();
+  const historyUsername = activeHistoryUsername();
+
+  if (sessionUsername) {
+    profileName.textContent = "Welcome @" + sessionUsername + " 🌱";
+  } else if (historyUsername) {
+    profileName.textContent = "Local history for @" + historyUsername + " 🌱";
   } else {
     profileName.textContent = "Please login first 🌱";
     historyList.innerHTML = '<div class="history-item">Go Home and login with Pi to view your local activity.</div>';
     return;
   }
 
-  const items = window.TPF.loadHistory(username);
+  const items = window.TPF.loadHistory(historyUsername);
 
   if (!items.length) {
     historyList.innerHTML = '<div class="history-item">No local activity yet.</div>';
@@ -40,7 +47,7 @@ function renderHistory() {
 }
 
 clearHistoryBtn.addEventListener("click", function () {
-  const username = window.TPF.getUsername();
+  const username = activeHistoryUsername();
   if (!username) return;
   localStorage.removeItem(window.TPF.historyKey(username));
   renderHistory();
