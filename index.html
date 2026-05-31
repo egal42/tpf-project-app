@@ -1,560 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>The Pioneer Forest Project</title>
-  <style>
-    :root {
-      --bg-dark: #03170d;
-      --bg-green: #0f5a32;
-      --bg-deep: #010f09;
-      --bg-soft: rgba(255, 255, 255, 0.055);
-      --text-main: #f2efe6;
-      --text-soft: rgba(242, 239, 230, 0.78);
-      --text-muted: rgba(242, 239, 230, 0.56);
-      --gold: #c8a94b;
-      --gold-border: rgba(200, 169, 75, 0.34);
-      --glass: rgba(5, 24, 16, 0.58);
-      --card-border: rgba(255, 255, 255, 0.10);
-      --warn-bg: rgba(200, 169, 75, 0.10);
-      --warn-border: rgba(200, 169, 75, 0.28);
-      --danger-bg: rgba(160, 45, 45, 0.14);
-      --danger-border: rgba(255, 120, 120, 0.28);
-    }
-
-    * { box-sizing: border-box; }
-    html { min-height: 100%; }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background:
-        radial-gradient(circle at top left, rgba(22, 103, 61, 0.38) 0%, transparent 34%),
-        radial-gradient(circle at bottom right, rgba(200, 169, 75, 0.10) 0%, transparent 30%),
-        linear-gradient(rgba(0,0,0,0.42), rgba(0,0,0,0.82)),
-        radial-gradient(circle at top, var(--bg-green) 0%, var(--bg-dark) 68%, var(--bg-deep) 100%);
-      color: var(--text-main);
-      font-family: Georgia, "Times New Roman", serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 1rem;
-    }
-
-    .card {
-      width: 100%;
-      max-width: 760px;
-      background: var(--glass);
-      border: 1px solid var(--card-border);
-      border-radius: 28px;
-      padding: 2rem 1.25rem;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 26px 70px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.05);
-    }
-
-    .tpf-logo {
-      width: 112px;
-      max-width: 34vw;
-      height: auto;
-      display: block;
-      margin: 0 auto 1.05rem;
-      filter: drop-shadow(0 0 14px rgba(200,169,75,0.15));
-    }
-
-    h1 { font-size: clamp(1.9rem, 6vw, 2.65rem); margin: 0 0 0.65rem; line-height: 1.12; }
-    h2 { font-size: clamp(1.25rem, 5vw, 1.62rem); margin: 1.35rem 0 0.7rem; color: var(--gold); letter-spacing: 0.01em; }
-    h3 { font-size: 1.03rem; margin: 1.2rem 0 0.55rem; color: var(--text-main); }
-
-    .subtitle { color: var(--gold); font-size: 1.02rem; margin: 0 0 1.15rem; opacity: 0.96; }
-    p { line-height: 1.65; opacity: 0.92; margin: 0 0 1rem; }
-    .soft { color: var(--text-soft); font-size: 0.96rem; }
-    .tiny { color: var(--text-muted); font-size: 0.81rem; line-height: 1.55; }
-
-    .notice, .warning, .danger {
-      border-radius: 18px;
-      padding: 0.95rem;
-      margin: 1rem 0;
-      font-size: 0.91rem;
-      line-height: 1.55;
-    }
-    .notice { background: var(--bg-soft); border: 1px solid rgba(255,255,255,0.08); color: var(--text-soft); }
-    .warning { background: var(--warn-bg); border: 1px solid var(--warn-border); color: var(--text-main); }
-    .danger { background: var(--danger-bg); border: 1px solid var(--danger-border); color: var(--text-main); }
-
-    .section {
-      border-top: 1px solid rgba(255,255,255,0.08);
-      margin-top: 1.35rem;
-      padding-top: 1.25rem;
-    }
-
-    .nav-grid, .amount-grid, .menu-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 0.75rem;
-      margin-top: 1rem;
-    }
-
-    .support-panel, .menu-card {
-      background: rgba(255,255,255,0.045);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 22px;
-      padding: 1rem;
-      margin-top: 1rem;
-    }
-
-    .button-row {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      margin-top: 1.1rem;
-    }
-
-    button, .button-link {
-      border: 1px solid transparent;
-      padding: 0.92rem 1rem;
-      border-radius: 16px;
-      font-weight: bold;
-      transition: 0.2s ease;
-      font-family: Georgia, "Times New Roman", serif;
-      font-size: 0.98rem;
-      cursor: pointer;
-      text-decoration: none;
-      display: block;
-      text-align: center;
-    }
-
-    button:hover:not(:disabled), .button-link:hover {
-      transform: translateY(-2px);
-      opacity: 0.96;
-      box-shadow: 0 10px 26px rgba(0,0,0,0.20);
-    }
-
-    button:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
-
-    .primary {
-      background: linear-gradient(180deg, rgba(200,169,75,0.22), rgba(200,169,75,0.13));
-      color: var(--text-main);
-      border: 1px solid var(--gold-border);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
-    }
-
-    .secondary {
-      background: rgba(255,255,255,0.055);
-      color: var(--text-main);
-      border: 1px solid rgba(255,255,255,0.11);
-    }
-
-    .ghost {
-      background: rgba(255, 255, 255, 0.045);
-      color: var(--text-soft);
-      border: 1px solid rgba(255, 255, 255, 0.10);
-    }
-
-    .amount-button.active {
-      background: linear-gradient(180deg, rgba(200,169,75,0.25), rgba(200,169,75,0.14));
-      color: var(--text-main);
-      border-color: var(--gold-border);
-    }
-
-    .test-button { text-align: center; line-height: 1.3; font-size: 1.04rem; }
-    .test-button span { display: block; color: rgba(242,239,230,0.65); font-size: 0.78rem; font-weight: normal; margin-top: 0.22rem; }
-
-    .input-wrap { text-align: left; margin-top: 1rem; }
-    label { display: block; color: var(--text-soft); font-size: 0.9rem; margin-bottom: 0.45rem; }
-
-    input {
-      width: 100%;
-      border: 1px solid rgba(255,255,255,0.14);
-      border-radius: 16px;
-      padding: 0.9rem 1rem;
-      background: rgba(0,0,0,0.22);
-      color: var(--text-main);
-      font-family: Georgia, "Times New Roman", serif;
-      font-size: 1rem;
-      outline: none;
-    }
-
-    input:focus { border-color: rgba(200,169,75,0.62); box-shadow: 0 0 0 3px rgba(200,169,75,0.10); }
-
-    .char-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 1rem;
-      margin-top: 0.45rem;
-      color: var(--text-muted);
-      font-size: 0.8rem;
-    }
-
-    #status, #appStatus {
-      font-size: 0.9rem;
-      opacity: 0.9;
-      margin-top: 1.05rem;
-      margin-bottom: 0;
-      word-break: break-word;
-      min-height: 1.4em;
-    }
-
-    .hidden { display: none; }
-    .welcome-name { color: var(--gold); font-size: 1.14rem; margin-bottom: 0.95rem; }
-    .footer-note { font-size: 0.78rem; opacity: 0.55; margin-top: 1.6rem; margin-bottom: 0; }
-
-    .history-list { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem; }
-
-    .history-item {
-      text-align: left;
-      background: rgba(0,0,0,0.20);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 18px;
-      padding: 0.9rem;
-      font-size: 0.86rem;
-      line-height: 1.55;
-      color: var(--text-soft);
-      word-break: break-word;
-    }
-
-    .history-item strong { color: var(--text-main); }
-
-    details {
-      text-align: left;
-      margin-top: 1rem;
-      background: rgba(0,0,0,0.18);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 18px;
-      padding: 0.85rem;
-      color: var(--text-soft);
-    }
-
-    summary { cursor: pointer; color: var(--gold); font-weight: bold; }
-
-    .test-log {
-      text-align: left;
-      background: rgba(0,0,0,0.22);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px;
-      padding: 0.85rem;
-      margin-top: 0.8rem;
-      font-size: 0.8rem;
-      line-height: 1.55;
-      color: var(--text-soft);
-      white-space: pre-wrap;
-      word-break: break-word;
-      max-height: 190px;
-      overflow: auto;
-    }
-
-
-    .logout-link {
-      margin-top: 0.8rem;
-      font-size: 0.82rem;
-      color: var(--text-muted);
-      text-decoration: underline;
-      background: transparent;
-      border: none;
-      box-shadow: none;
-      padding: 0.25rem;
-      font-weight: normal;
-    }
-
-    .logout-link:hover:not(:disabled) {
-      transform: none;
-      box-shadow: none;
-      color: var(--gold);
-    }
-
-    .history-topline {
-      display: flex;
-      justify-content: space-between;
-      gap: 1rem;
-      align-items: baseline;
-      margin-top: 0.35rem;
-      flex-wrap: wrap;
-    }
-
-    .history-amount {
-      color: var(--gold);
-      font-size: 1.12rem;
-      font-weight: bold;
-    }
-
-    .history-date {
-      color: var(--text-muted);
-      font-size: 0.82rem;
-      text-align: right;
-      margin-left: auto;
-    }
-
-    .menu-shell {
-      background:
-        radial-gradient(circle at top, rgba(200,169,75,0.08), transparent 42%),
-        rgba(0,0,0,0.18);
-      border: 1px solid rgba(200,169,75,0.14);
-      border-radius: 24px;
-      padding: 1rem;
-      margin-top: 1.1rem;
-    }
-
-    .menu-card {
-      position: relative;
-      overflow: hidden;
-      min-height: 112px;
-      text-align: left;
-    }
-
-    .menu-card::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(200,169,75,0.08), transparent 55%);
-      pointer-events: none;
-    }
-
-    .menu-card h3,
-    .menu-card p {
-      position: relative;
-      z-index: 1;
-    }
-
-    a { color: var(--gold); }
-
-    @media (min-width: 620px) {
-      body { padding: 2rem; }
-      .card { padding: 2.7rem 2.1rem; }
-      .amount-grid { grid-template-columns: repeat(3, 1fr); }
-      .nav-grid, .menu-grid { grid-template-columns: 1fr 1fr; }
-    }
-
-  </style>
-
-  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-  <script>
-    window.tpfPiReady = Promise.resolve(false);
-
-    try {
-      if (window.Pi && typeof window.Pi.init === "function") {
-        window.tpfPiReady = Promise.resolve(
-          window.Pi.init({
-            version: "2.0",
-            sandbox: true
-          })
-        ).then(function () {
-          return true;
-        }).catch(function (error) {
-          console.error("Pi init error:", error);
-          return false;
-        });
-      }
-    } catch (error) {
-      console.error("Pi init setup error:", error);
-    }
-  </script>
-
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#03170d" />
+<meta name="color-scheme" content="dark" />
+<style>
+html,body{margin:0;background:#03170d;color:#f2efe6;}
+</style>
+<title>The Pioneer Forest Project</title>
+<link rel="stylesheet" href="assets/styles.css" />
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<script src="assets/pi-init.js"></script>
 </head>
 <body>
-  <main class="card">
-    <img class="tpf-logo" src="assets/tpf-logo.png" alt="The Pioneer Forest logo" />
+<main class="card">
+  <img class="tpf-logo" src="assets/tpf-logo.png" alt="The Pioneer Forest logo" />
 
-    <section id="loginScreen">
-      <h1>The Pioneer Forest Project</h1>
+  <section id="loginScreen">
+    <h1>The Pioneer Forest Project</h1>
 
-      <p class="subtitle">Pi-powered forest journeys</p>
+    <p class="subtitle">Pi-powered forest journeys</p>
 
-      <p>
-        <em>Not every journey begins with a destination.<br />
-        Some begin with a seed.</em>
-      </p>
+    <p>
+      <em>Not every journey begins with a destination.<br />
+      Some begin with a seed.</em>
+    </p>
 
+    <p class="soft">
+      Welcome to the Testnet preview of The Pioneer Forest.
+    </p>
+
+    <p class="soft">
+      This app is designed for Pi Browser and helps us test future features before Mainnet.
+    </p>
+
+    <p class="tiny">
+      Testnet only • No real Pi donations
+    </p>
+
+    <div id="browserWarning" class="warning hidden">
+      <strong>Pi Browser required.</strong><br />
+      This preview uses Pi Network login and Testnet payment features. Please open it inside Pi Browser to continue.<br /><br />
+      <a href="https://minepi.com/pi-browser/" target="_blank" rel="noopener">Download Pi Browser</a>
+    </div>
+
+    <div class="button-row">
+      <button class="primary" id="loginBtn">Enter with Pi Login</button>
+    </div>
+
+    <p id="status">Ready for Pi login.</p>
+  </section>
+
+  <section id="homeScreen" class="hidden">
+    <h1>The Pioneer Forest</h1>
+
+    <p class="welcome-name" id="welcomeName">Welcome back, @Pioneer 🌱</p>
+
+    <p id="forestFact" class="forest-fact">🌳 Forests are living systems of roots, water, soil and time.</p>
+
+    <p>
+      A calm Pi-powered forest journey where transparency, participation and real-world impact can grow step by step.
+    </p>
+
+    <div class="danger">
+      Testnet preview — no real Pi donation, no real tree planting, no CO₂ credit.
+    </div>
+
+    <section class="section">
+      <h2>About</h2>
       <p class="soft">
-        Welcome to the Testnet preview of The Pioneer Forest.
+        The Pioneer Forest explores how Pi can support reforestation, transparent records and meaningful community participation.
       </p>
-
       <p class="soft">
-        This app is designed for Pi Browser and helps us test future features before Mainnet.
+        This first Testnet version keeps things simple: Pi login, a support preview, and a small personal activity history.
       </p>
-
-      <p class="tiny">
-        Testnet only • No real Pi donations
-      </p>
-
-      <div id="browserWarning" class="warning hidden">
-        <strong>Pi Browser required.</strong><br />
-        This preview uses Pi Network login and Testnet payment features. Please open it inside Pi Browser to continue.<br /><br />
-        <a href="https://minepi.com/pi-browser/" target="_blank" rel="noopener">
-          Download Pi Browser
-        </a>
-      </div>
-
-      <div class="button-row">
-        <button class="primary" id="loginBtn">Enter with Pi Login</button>
-      </div>
-
-      <p id="status">Ready for Pi login.</p>
     </section>
 
-    <section id="homeScreen" class="hidden">
-      <h1>The Pioneer Forest</h1>
+    <div class="nav-grid">
+      <a class="button-link primary" href="support.html">🌱 Support The Forest</a>
+      <a class="button-link secondary" href="myforest.html">My Forest</a>
+      <a class="button-link ghost" href="menu.html">More Paths</a>
+    </div>
+  </section>
 
-      <p class="welcome-name" id="welcomeName">Welcome @Pioneer 🌱</p>
+  <button class="signout-button hidden" id="signOutBtn">👤 Sign Out</button>
 
-      <p>
-        A calm Pi-powered forest journey where transparency, participation and real-world impact can grow step by step.
-      </p>
+  <p class="footer-note">Development preview — Testnet phase</p>
+</main>
 
-      <div class="danger">
-        Testnet preview — no real Pi donation, no real tree planting, no CO₂ credit.
-      </div>
-
-      <section class="section">
-        <h2>About</h2>
-        <p class="soft">
-          The Pioneer Forest explores how Pi can support reforestation, transparent records and meaningful community participation.
-        </p>
-        <p class="soft">
-          This first Testnet version keeps things simple: Pi login, a support preview, and a small personal activity history.
-        </p>
-      </section>
-
-      <div class="nav-grid">
-        <a class="button-link primary" href="support.html">🌱 Support The Forest</a>
-        <a class="button-link secondary" href="myforest.html">My Forest</a>
-        <a class="button-link ghost" href="menu.html">Future Menu</a>
-      </div>
-    </section>
-
-    <button class="logout-link" id="logoutBtn">Log out locally</button>
-
-    <p class="footer-note">Development preview — Testnet phase</p>
-
-  </main>
-  <script>
-    const loginScreen = document.getElementById("loginScreen");
-    const homeScreen = document.getElementById("homeScreen");
-    const loginBtn = document.getElementById("loginBtn");
-    const statusEl = document.getElementById("status");
-    const browserWarning = document.getElementById("browserWarning");
-    const welcomeName = document.getElementById("welcomeName");
-    const logoutBtn = document.getElementById("logoutBtn");
-
-    function showStatus(message) {
-      statusEl.textContent = message;
-    }
-
-    function isPiSdkAvailable() {
-      return !!window.Pi;
-    }
-
-    function showPiBrowserRequired() {
-      browserWarning.classList.remove("hidden");
-      showStatus("Pi SDK not available. Please open this app inside Pi Browser.");
-      loginBtn.textContent = "Pi Browser required";
-    }
-
-    function withTimeout(promise, milliseconds, timeoutMessage) {
-      return Promise.race([
-        promise,
-        new Promise(function (_, reject) {
-          setTimeout(function () { reject(new Error(timeoutMessage)); }, milliseconds);
-        })
-      ]);
-    }
-
-    function saveSession(auth) {
-      const user = auth && auth.user ? auth.user : null;
-
-      if (user && user.username) {
-        localStorage.setItem("tpf_username", user.username);
-        localStorage.setItem("tpf_last_login", new Date().toISOString());
-      }
-    }
-
-    function showLoggedIn(username) {
-      welcomeName.textContent = "Welcome @" + username + " 🌱";
-      loginScreen.classList.add("hidden");
-      homeScreen.classList.remove("hidden");
-    }
-
-    function localLogout() {
-      localStorage.removeItem("tpf_username");
-      localStorage.removeItem("tpf_last_login");
-      homeScreen.classList.add("hidden");
-      loginScreen.classList.remove("hidden");
-      loginBtn.disabled = false;
-      loginBtn.textContent = "Enter with Pi Login";
-      showStatus("Logged out locally. Pi Browser may still remember account permission.");
-    }
-
-    if (logoutBtn) {
-      logoutBtn.addEventListener("click", localLogout);
-    }
-
-    loginBtn.addEventListener("click", async function () {
-      showStatus("Checking Pi login...");
-      loginBtn.disabled = true;
-
-      try {
-        if (!window.Pi || typeof window.Pi.authenticate !== "function") {
-          browserWarning.classList.remove("hidden");
-          showStatus("Pi SDK not available. Please open this app inside Pi Browser.");
-          loginBtn.textContent = "Pi Browser required";
-          loginBtn.disabled = false;
-          return;
-        }
-
-        const initReady = await withTimeout(window.tpfPiReady || Promise.resolve(true), 8000, "Pi SDK init timed out.");
-
-        if (!initReady) {
-          showStatus("Pi SDK init failed. Please reload inside Pi Browser.");
-          loginBtn.disabled = false;
-          return;
-        }
-
-        showStatus("Starting Pi login...");
-
-        const auth = await withTimeout(
-          window.Pi.authenticate(
-            ["username", "payments"],
-            function onIncompletePaymentFound(payment) {
-              console.log("Incomplete payment found:", payment);
-              showStatus("Incomplete payment found. Check logs before starting more tests.");
-            }
-          ),
-          12000,
-          "Pi login timed out."
-        );
-
-        if (!auth || !auth.user || !auth.user.username) {
-          showStatus("Pi login did not return a username. Please try again inside Pi Browser.");
-          loginBtn.disabled = false;
-          return;
-        }
-
-        saveSession(auth);
-        showLoggedIn(auth.user.username);
-
-      } catch (error) {
-        console.error("Pi login error:", error);
-        browserWarning.classList.remove("hidden");
-        showStatus("Pi login failed or timed out. Please open this app inside Pi Browser and try again.");
-        loginBtn.textContent = "Enter with Pi Login";
-        loginBtn.disabled = false;
-      }
-    });
-
-    window.addEventListener("load", function () {
-      const username = localStorage.getItem("tpf_username");
-
-      if (username) {
-        showLoggedIn(username);
-      }
-
-      setTimeout(function () {
-        if (!isPiSdkAvailable()) {
-          showPiBrowserRequired();
-        }
-      }, 1000);
-    });
-  </script>
-
+<script src="assets/app-common.js"></script>
+<script src="assets/home.js"></script>
 </body>
 </html>
