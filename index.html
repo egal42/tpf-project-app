@@ -100,6 +100,30 @@
       word-break: break-word;
     }
 
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .history-item {
+      text-align: left;
+      background: rgba(0,0,0,0.24);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 0.9rem;
+      font-size: 0.86rem;
+      line-height: 1.55;
+      color: var(--text-soft);
+      word-break: break-word;
+    }
+
+    .history-item strong {
+      color: var(--text-main);
+    }
+
     @media (min-width: 620px) {
       .amount-grid {
         grid-template-columns: repeat(3, 1fr);
@@ -332,6 +356,30 @@
       gap: 0.75rem;
     }
 
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .history-item {
+      text-align: left;
+      background: rgba(0,0,0,0.24);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 0.9rem;
+      font-size: 0.86rem;
+      line-height: 1.55;
+      color: var(--text-soft);
+      word-break: break-word;
+    }
+
+    .history-item strong {
+      color: var(--text-main);
+    }
+
     @media (min-width: 620px) {
       body {
         padding: 2rem;
@@ -408,7 +456,10 @@
 
       <div id="browserWarning" class="warning hidden">
         <strong>Pi Browser required.</strong><br />
-        This preview uses Pi Network login and Testnet payment features. Please open it inside Pi Browser to continue.
+        This preview uses Pi Network login and Testnet payment features. Please open it inside Pi Browser to continue.<br /><br />
+        <a href="https://minepi.com/pi-browser/" target="_blank" rel="noopener" style="color: var(--gold); font-weight: bold;">
+          Download Pi Browser
+        </a>
       </div>
 
       <div class="button-row">
@@ -452,14 +503,14 @@
         <h2>Testnet Donation Lab</h2>
 
         <p class="soft">
-          Choose a Test Pi amount, set a note, and test how Pi SDK payments behave before any Mainnet logic is built.
+          Choose a Test Pi amount and send a Testnet payment through the Pi SDK. This is only for testing the future TPF app flow.
         </p>
 
         <div class="notice">
-          Early result from testing: the note appears in the Pi Wallet confirmation screen, but Block Explorer may show a Pi-generated internal memo instead.
+          Current test result: SDK payment notes are visible in the Pi Wallet screen, but Block Explorer shows a Pi-generated internal memo. So this version does not rely on notes for attribution.
         </div>
 
-        <h3>1. Choose Test Pi amount</h3>
+        <h3>Choose Test Pi amount</h3>
 
         <div class="amount-grid">
           <button class="secondary amount-button active" data-amount="1">
@@ -484,80 +535,40 @@
           </div>
         </div>
 
-        <h3>2. Choose note / memo</h3>
-
-        <div class="mini-grid">
-          <button class="secondary note-button" data-note="TPF">
-            Note: TPF
-          </button>
-
-          <button class="secondary note-button" data-note="ThePioneerForest">
-            Note: ThePioneerForest
-          </button>
-
-          <button class="secondary note-button" data-mode="username">
-            Note: TPF @username
-          </button>
-
-          <button class="secondary note-button" data-note="Forest Test">
-            Note: Forest Test
-          </button>
-        </div>
-
-        <div class="input-wrap">
-          <label for="customNote">Custom note / memo — auto-filled after login</label>
-          <input id="customNote" maxlength="25" value="TPF" autocomplete="off" />
-          <div class="char-row">
-            <span>Default after login: TPF @username. Maximum enforced here: 25 characters.</span>
-            <span id="charCount">3/25</span>
-          </div>
-        </div>
-
         <div class="button-row">
           <button class="primary test-button" id="sdkPaymentBtn">
-            Pay selected amount with Pi SDK
-            <span>Uses the note as SDK memo and metadata.note.</span>
+            Send Testnet Payment
+            <span>Uses Pi SDK User-to-App payment. No real donation.</span>
           </button>
         </div>
 
         <p id="appStatus">
-          Logged in. Choose amount and note, then start a Testnet payment.
+          Logged in. Choose an amount, then start a Testnet payment.
         </p>
 
         <div class="test-log" id="testLog">Test log will appear here.</div>
 
         <section class="section">
-          <h2>Manual Wallet Test</h2>
+          <h2>Activity & History</h2>
 
           <p class="soft">
-            This opens the Pi Wallet so you can manually send Test Pi to the app wallet and test whether a direct wallet note appears in Block Explorer.
+            This local history records Testnet activity in this browser only. It is not a public ledger and not a real donation history yet.
           </p>
 
-          <div class="wallet-box">
-            <strong>App Wallet:</strong><br />
-            <span id="walletAddress">GCUCDB7TYFZAKCL37BJODW3QPXKQZFSDRFW3U3MNSCT7GEMNDDQEXEGO</span><br /><br />
-            <strong>Suggested note:</strong><br />
-            <span id="manualNotePreview">TPF</span>
-          </div>
-
-          <div class="copy-row">
-            <button class="ghost" id="copyWalletBtn">
-              Copy app wallet
-            </button>
-
-            <button class="ghost" id="copyNoteBtn">
-              Copy current note
-            </button>
+          <div class="history-list" id="historyList">
+            <div class="history-item">
+              No local activity yet.
+            </div>
           </div>
 
           <div class="button-row">
-            <button class="secondary" id="openWalletBtn">
-              Open Pi Wallet for manual test
+            <button class="ghost" id="clearHistoryBtn">
+              Clear local history
             </button>
           </div>
 
           <p class="tiny">
-            Manual wallet payments are separate from Pi SDK app payments. The app cannot pre-fill the wallet transaction safely here; copy the wallet address and note yourself.
+            Later, real Mainnet history should be saved server-side with minimal data: username, payment ID, txid, amount, date and status.
           </p>
         </section>
       </section>
@@ -590,7 +601,14 @@
   </main>
 
   <script>
-    const APP_WALLET = "GCUCDB7TYFZAKCL37BJODW3QPXKQZFSDRFW3U3MNSCT7GEMNDDQEXEGO";
+    const HISTORY_PREFIX = "tpf_testnet_history_";
+    const FOREST_MESSAGES = [
+      "The forest records your step.",
+      "A root extends quietly.",
+      "The soil remembers.",
+      "Another signal reaches the forest.",
+      "A small action enters the journey."
+    ];
 
     const loginScreen = document.getElementById("loginScreen");
     const appScreen = document.getElementById("appScreen");
@@ -598,7 +616,6 @@
     const loginBtn = document.getElementById("loginBtn");
     const sdkPaymentBtn = document.getElementById("sdkPaymentBtn");
     const amountButtons = document.querySelectorAll(".amount-button");
-    const noteButtons = document.querySelectorAll(".note-button");
 
     const statusEl = document.getElementById("status");
     const appStatusEl = document.getElementById("appStatus");
@@ -607,20 +624,14 @@
 
     const customAmount = document.getElementById("customAmount");
     const selectedAmountLabel = document.getElementById("selectedAmountLabel");
-    const customNote = document.getElementById("customNote");
-    const charCount = document.getElementById("charCount");
     const testLog = document.getElementById("testLog");
-
-    const walletAddress = document.getElementById("walletAddress");
-    const manualNotePreview = document.getElementById("manualNotePreview");
-    const copyWalletBtn = document.getElementById("copyWalletBtn");
-    const copyNoteBtn = document.getElementById("copyNoteBtn");
-    const openWalletBtn = document.getElementById("openWalletBtn");
+    const historyList = document.getElementById("historyList");
+    const clearHistoryBtn = document.getElementById("clearHistoryBtn");
 
     let currentUser = null;
     let currentAccessToken = null;
     let selectedAmount = 1;
-    let activePaymentTest = null;
+    let activePayment = null;
 
     function showStatus(message) {
       statusEl.textContent = message;
@@ -656,13 +667,14 @@
     function showPiBrowserRequired() {
       browserWarning.classList.remove("hidden");
       showStatus("Pi SDK not available. Please open this app inside Pi Browser.");
-      loginBtn.textContent = "Open in Pi Browser required";
+      loginBtn.textContent = "Pi Browser required";
     }
 
     function showLoggedInScreen(username) {
       welcomeName.textContent = "Welcome @" + username + " 🌱";
       loginScreen.classList.add("hidden");
       appScreen.classList.remove("hidden");
+      renderHistory();
     }
 
     function getPaymentId(paymentData) {
@@ -685,11 +697,7 @@
     function setPaymentDisabled(disabled) {
       sdkPaymentBtn.disabled = disabled;
       amountButtons.forEach(function (button) { button.disabled = disabled; });
-      noteButtons.forEach(function (button) { button.disabled = disabled; });
-    }
-
-    function normalizeNote(value) {
-      return String(value || "").trim();
+      customAmount.disabled = disabled;
     }
 
     function parseAmount() {
@@ -711,11 +719,6 @@
       }
     }
 
-    function updateCharCount() {
-      charCount.textContent = customNote.value.length + "/25";
-      manualNotePreview.textContent = customNote.value || "TPF";
-    }
-
     function selectAmount(button) {
       amountButtons.forEach(function (btn) { btn.classList.remove("active"); });
       button.classList.add("active");
@@ -724,43 +727,65 @@
       updateSelectedAmountLabel();
     }
 
-    function buildUsernameNote() {
-      if (currentUser && currentUser.username) {
-        return ("TPF @" + currentUser.username).slice(0, 25);
-      }
-
-      return "TPF";
+    function historyKey() {
+      const username = currentUser && currentUser.username ? currentUser.username : "unknown";
+      return HISTORY_PREFIX + username;
     }
 
-    function autofillUsernameNote() {
-      customNote.value = buildUsernameNote();
-      updateCharCount();
-      logTest("Note auto-filled from Pi username", {
-        note: customNote.value,
-        maxLength: 25
-      });
-    }
-
-    function setNoteFromButton(button) {
-      const mode = button.getAttribute("data-mode");
-      const fixedNote = button.getAttribute("data-note");
-
-      if (mode === "username" && currentUser) {
-        customNote.value = buildUsernameNote();
-      } else {
-        customNote.value = (fixedNote || "TPF").slice(0, 25);
-      }
-
-      updateCharCount();
-    }
-
-    async function copyText(value, label) {
+    function loadHistory() {
       try {
-        await navigator.clipboard.writeText(value);
-        showAppStatus(label + " copied.");
+        return JSON.parse(localStorage.getItem(historyKey()) || "[]");
       } catch (error) {
-        showAppStatus("Copy failed. Select and copy manually.");
+        return [];
       }
+    }
+
+    function saveHistory(items) {
+      localStorage.setItem(historyKey(), JSON.stringify(items.slice(0, 25)));
+    }
+
+    function randomForestMessage() {
+      return FOREST_MESSAGES[Math.floor(Math.random() * FOREST_MESSAGES.length)];
+    }
+
+    function addHistoryItem(item) {
+      const items = loadHistory();
+      items.unshift(item);
+      saveHistory(items);
+      renderHistory();
+    }
+
+    function renderHistory() {
+      if (!historyList) return;
+
+      const items = loadHistory();
+
+      if (!items.length) {
+        historyList.innerHTML = '<div class="history-item">No local activity yet.</div>';
+        return;
+      }
+
+      historyList.innerHTML = items.map(function (item) {
+        const txLine = item.txid ? '<br /><strong>TX ID:</strong> ' + escapeHtml(item.txid) : "";
+        const paymentLine = item.paymentId ? '<br /><strong>Payment ID:</strong> ' + escapeHtml(item.paymentId) : "";
+
+        return '<div class="history-item">' +
+          '<strong>' + escapeHtml(item.dateLabel) + '</strong><br />' +
+          escapeHtml(item.amount) + ' Test Pi payment completed' +
+          '<br /><em>"' + escapeHtml(item.message) + '"</em>' +
+          paymentLine +
+          txLine +
+          '</div>';
+      }).join("");
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
     }
 
     async function createSdkPayment() {
@@ -775,39 +800,30 @@
       }
 
       const amount = parseAmount();
-      const userNote = normalizeNote(customNote.value);
 
       if (amount === null) {
         showAppStatus("Please enter a valid amount.");
         return;
       }
 
-      if (!userNote) {
-        showAppStatus("Please enter or select a note first.");
-        return;
-      }
-
-      activePaymentTest = {
+      activePayment = {
         amount: amount,
-        note: userNote,
         username: currentUser.username,
         startedAt: new Date().toISOString()
       };
 
       setPaymentDisabled(true);
-      showAppStatus("Creating Testnet SDK payment: " + amount + " Test Pi / note: " + userNote);
-      logTest("Starting SDK payment", activePaymentTest);
+      showAppStatus("Creating Testnet payment: " + amount + " Test Pi");
+      logTest("Starting SDK payment", activePayment);
 
       const paymentData = {
         amount: amount,
-        memo: userNote,
+        memo: "TPF Testnet",
         metadata: {
           app: "The Pioneer Forest Project",
-          type: "testnet_donation_lab",
+          type: "testnet_payment_history_lab",
           paymentMode: "sdk_user_to_app",
           username: currentUser.username,
-          note: userNote,
-          noteLength: userNote.length,
           selectedAmount: amount
         }
       };
@@ -820,7 +836,7 @@
           logTest("onReadyForServerApproval", {
             paymentId: paymentId,
             rawPaymentDTO: paymentDTO,
-            activePaymentTest: activePaymentTest
+            activePayment: activePayment
           });
 
           const response = await fetch("/.netlify/functions/approve-payment", {
@@ -829,7 +845,6 @@
             body: JSON.stringify({
               paymentId: paymentId,
               amount: amount,
-              note: userNote,
               username: currentUser.username
             })
           });
@@ -847,7 +862,7 @@
             paymentId: paymentId,
             txid: txid,
             rawPaymentDTO: paymentDTO,
-            activePaymentTest: activePaymentTest
+            activePayment: activePayment
           });
 
           const response = await fetch("/.netlify/functions/complete-payment", {
@@ -857,7 +872,6 @@
               paymentId: paymentId,
               txid: txid,
               amount: amount,
-              note: userNote,
               username: currentUser.username
             })
           });
@@ -866,7 +880,19 @@
           console.log("Completion response:", data);
           logTest("Completion response", data);
 
-          showAppStatus("SDK payment completed. Check Wallet screen result, Block Explorer, and Netlify logs.");
+          addHistoryItem({
+            type: "testnet_payment",
+            username: currentUser.username,
+            amount: amount,
+            paymentId: paymentId,
+            txid: txid,
+            status: "completed",
+            message: randomForestMessage(),
+            dateIso: new Date().toISOString(),
+            dateLabel: new Date().toLocaleString()
+          });
+
+          showAppStatus("Payment completed. Local Activity & History updated.");
           setPaymentDisabled(false);
         },
 
@@ -882,7 +908,7 @@
           logTest("Payment error", {
             error: error && error.message ? error.message : error,
             paymentDTO: paymentDTO,
-            activePaymentTest: activePaymentTest
+            activePayment: activePayment
           });
           showAppStatus("Payment error. Check logs.");
           setPaymentDisabled(false);
@@ -954,7 +980,6 @@
           username: auth.user.username,
           hasAccessToken: !!currentAccessToken
         });
-        autofillUsernameNote();
 
       } catch (error) {
         console.error("Pi login error:", error);
@@ -971,34 +996,16 @@
       });
     });
 
-    noteButtons.forEach(function (button) {
-      button.addEventListener("click", function () {
-        setNoteFromButton(button);
-      });
-    });
-
     customAmount.addEventListener("input", updateSelectedAmountLabel);
-    customNote.addEventListener("input", updateCharCount);
     sdkPaymentBtn.addEventListener("click", createSdkPayment);
 
-    copyWalletBtn.addEventListener("click", function () {
-      copyText(APP_WALLET, "App wallet");
+    clearHistoryBtn.addEventListener("click", function () {
+      if (!currentUser) return;
+      localStorage.removeItem(historyKey());
+      renderHistory();
+      showAppStatus("Local history cleared.");
     });
 
-    copyNoteBtn.addEventListener("click", function () {
-      copyText(customNote.value || "TPF", "Current note");
-    });
-
-    openWalletBtn.addEventListener("click", function () {
-      logTest("Opening Pi Wallet for manual test", {
-        wallet: APP_WALLET,
-        suggestedNote: customNote.value || "TPF"
-      });
-      window.location.href = "https://wallet.pinet.com";
-    });
-
-    walletAddress.textContent = APP_WALLET;
-    updateCharCount();
     updateSelectedAmountLabel();
 
     window.addEventListener("load", function () {
@@ -1009,6 +1016,7 @@
       }, 1000);
     });
   </script>
+
 
 
 </body>
