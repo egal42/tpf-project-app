@@ -255,216 +255,110 @@
 
   </style>
 
-  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-  <script>
-    window.tpfPiReady = Promise.resolve(false);
-
-    try {
-      if (window.Pi && typeof window.Pi.init === "function") {
-        window.tpfPiReady = Promise.resolve(
-          window.Pi.init({
-            version: "2.0",
-            sandbox: true
-          })
-        ).then(function () {
-          return true;
-        }).catch(function (error) {
-          console.error("Pi init error:", error);
-          return false;
-        });
-      }
-    } catch (error) {
-      console.error("Pi init setup error:", error);
-    }
-  </script>
 
 </head>
 <body>
   <main class="card">
     <img class="tpf-logo" src="assets/tpf-logo.png" alt="The Pioneer Forest logo" />
 
-    <section id="loginScreen">
-      <h1>The Pioneer Forest Project</h1>
+    <h1>My Forest</h1>
 
-      <p class="subtitle">Pi-powered forest journeys</p>
+    <p class="welcome-name" id="profileName">Welcome, Pioneer 🌱</p>
 
-      <p>
-        <em>Not every journey begins with a destination.<br />
-        Some begin with a seed.</em>
-      </p>
+    <p class="soft">
+      Your local Testnet activity in this browser.
+    </p>
 
-      <p class="soft">
-        Welcome to the Testnet preview of The Pioneer Forest.
-      </p>
-
-      <p class="soft">
-        This app is designed for Pi Browser and helps us test future features before Mainnet.
-      </p>
-
-      <p class="tiny">
-        Testnet only • No real Pi donations
-      </p>
-
-      <div id="browserWarning" class="warning hidden">
-        <strong>Pi Browser required.</strong><br />
-        This preview uses Pi Network login and Testnet payment features. Please open it inside Pi Browser to continue.<br /><br />
-        <a href="https://minepi.com/pi-browser/" target="_blank" rel="noopener">
-          Download Pi Browser
-        </a>
+    <section class="section">
+      <div class="history-list" id="historyList">
+        <div class="history-item">No local activity yet.</div>
       </div>
 
       <div class="button-row">
-        <button class="primary" id="loginBtn">Enter with Pi Login</button>
+        <button class="ghost" id="clearHistoryBtn">Clear local history</button>
       </div>
 
-      <p id="status">Ready for Pi login.</p>
-    </section>
-
-    <section id="homeScreen" class="hidden">
-      <h1>The Pioneer Forest</h1>
-
-      <p class="welcome-name" id="welcomeName">Welcome @Pioneer 🌱</p>
-
-      <p>
-        A calm Pi-powered forest journey where transparency, participation and real-world impact can grow step by step.
+      <p class="tiny">
+        Later, real Mainnet history should be saved server-side with minimal data: username, payment ID, txid, amount, date and status.
       </p>
-
-      <div class="danger">
-        Testnet preview — no real Pi donation, no real tree planting, no CO₂ credit.
-      </div>
-
-      <section class="section">
-        <h2>About</h2>
-        <p class="soft">
-          The Pioneer Forest explores how Pi can support reforestation, transparent records and meaningful community participation.
-        </p>
-        <p class="soft">
-          This first app version keeps things simple: Pi login, Testnet support flow, and a small personal activity history.
-        </p>
-      </section>
-
-      <div class="nav-grid">
-        <a class="button-link primary" href="support.html">🌱 Support Preview</a>
-        <a class="button-link secondary" href="myforest.html">View My Forest</a>
-        <a class="button-link ghost" href="menu.html">Future Menu</a>
-      </div>
     </section>
+
+    <div class="nav-grid">
+      <a class="button-link ghost" href="index.html">Home</a>
+      <a class="button-link primary" href="support.html">Support Preview</a>
+      <a class="button-link secondary" href="menu.html">Menu</a>
+    </div>
 
     <p class="footer-note">Development preview — Testnet phase</p>
 
   </main>
   <script>
-    const loginScreen = document.getElementById("loginScreen");
-    const homeScreen = document.getElementById("homeScreen");
-    const loginBtn = document.getElementById("loginBtn");
-    const statusEl = document.getElementById("status");
-    const browserWarning = document.getElementById("browserWarning");
-    const welcomeName = document.getElementById("welcomeName");
+    const HISTORY_PREFIX = "tpf_testnet_history_";
+    const historyList = document.getElementById("historyList");
+    const clearHistoryBtn = document.getElementById("clearHistoryBtn");
+    const profileName = document.getElementById("profileName");
 
-    function showStatus(message) {
-      statusEl.textContent = message;
+    function getUsername() {
+      return localStorage.getItem("tpf_username") || "unknown";
     }
 
-    function isPiSdkAvailable() {
-      return !!window.Pi;
+    function historyKey() {
+      return HISTORY_PREFIX + getUsername();
     }
 
-    function showPiBrowserRequired() {
-      browserWarning.classList.remove("hidden");
-      showStatus("Pi SDK not available. Please open this app inside Pi Browser.");
-      loginBtn.textContent = "Pi Browser required";
-    }
-
-    function withTimeout(promise, milliseconds, timeoutMessage) {
-      return Promise.race([
-        promise,
-        new Promise(function (_, reject) {
-          setTimeout(function () { reject(new Error(timeoutMessage)); }, milliseconds);
-        })
-      ]);
-    }
-
-    function saveSession(auth) {
-      const user = auth && auth.user ? auth.user : null;
-
-      if (user && user.username) {
-        localStorage.setItem("tpf_username", user.username);
-        localStorage.setItem("tpf_last_login", new Date().toISOString());
-      }
-    }
-
-    function showLoggedIn(username) {
-      welcomeName.textContent = "Welcome @" + username + " 🌱";
-      loginScreen.classList.add("hidden");
-      homeScreen.classList.remove("hidden");
-    }
-
-    loginBtn.addEventListener("click", async function () {
-      showStatus("Checking Pi login...");
-      loginBtn.disabled = true;
-
+    function loadHistory() {
       try {
-        if (!window.Pi || typeof window.Pi.authenticate !== "function") {
-          browserWarning.classList.remove("hidden");
-          showStatus("Pi SDK not available. Please open this app inside Pi Browser.");
-          loginBtn.textContent = "Pi Browser required";
-          loginBtn.disabled = false;
-          return;
-        }
-
-        const initReady = await withTimeout(window.tpfPiReady || Promise.resolve(true), 8000, "Pi SDK init timed out.");
-
-        if (!initReady) {
-          showStatus("Pi SDK init failed. Please reload inside Pi Browser.");
-          loginBtn.disabled = false;
-          return;
-        }
-
-        showStatus("Starting Pi login...");
-
-        const auth = await withTimeout(
-          window.Pi.authenticate(
-            ["username", "payments"],
-            function onIncompletePaymentFound(payment) {
-              console.log("Incomplete payment found:", payment);
-              showStatus("Incomplete payment found. Check logs before starting more tests.");
-            }
-          ),
-          12000,
-          "Pi login timed out."
-        );
-
-        if (!auth || !auth.user || !auth.user.username) {
-          showStatus("Pi login did not return a username. Please try again inside Pi Browser.");
-          loginBtn.disabled = false;
-          return;
-        }
-
-        saveSession(auth);
-        showLoggedIn(auth.user.username);
-
+        return JSON.parse(localStorage.getItem(historyKey()) || "[]");
       } catch (error) {
-        console.error("Pi login error:", error);
-        browserWarning.classList.remove("hidden");
-        showStatus("Pi login failed or timed out. Please open this app inside Pi Browser and try again.");
-        loginBtn.textContent = "Enter with Pi Login";
-        loginBtn.disabled = false;
+        return [];
       }
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function renderHistory() {
+      const username = getUsername();
+
+      if (username !== "unknown") {
+        profileName.textContent = "Welcome @" + username + " 🌱";
+      }
+
+      const items = loadHistory();
+
+      if (!items.length) {
+        historyList.innerHTML = '<div class="history-item">No local activity yet.</div>';
+        return;
+      }
+
+      historyList.innerHTML = items.map(function (item) {
+        const txLine = item.txid ? '<br /><strong>TX ID:</strong> ' + escapeHtml(item.txid) : "";
+        const paymentLine = item.paymentId ? '<br /><strong>Payment ID:</strong> ' + escapeHtml(item.paymentId) : "";
+        const details = paymentLine || txLine
+          ? '<details><summary>Payment details</summary><p class="tiny">' + paymentLine + txLine + '</p></details>'
+          : "";
+
+        return '<div class="history-item">' +
+          '<strong>' + escapeHtml(item.amount) + ' Test Pi</strong><br />' +
+          escapeHtml(item.dateLabel) +
+          '<br /><em>"' + escapeHtml(item.message) + '"</em>' +
+          details +
+          '</div>';
+      }).join("");
+    }
+
+    clearHistoryBtn.addEventListener("click", function () {
+      localStorage.removeItem(historyKey());
+      renderHistory();
     });
 
-    window.addEventListener("load", function () {
-      const username = localStorage.getItem("tpf_username");
-
-      if (username) {
-        showLoggedIn(username);
-      }
-
-      setTimeout(function () {
-        if (!isPiSdkAvailable()) {
-          showPiBrowserRequired();
-        }
-      }, 1000);
-    });
+    renderHistory();
   </script>
 
 </body>
