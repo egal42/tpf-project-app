@@ -10,34 +10,32 @@
     :root {
       --bg-dark: #03170d;
       --bg-green: #0f5a32;
-      --bg-soft: rgba(255, 255, 255, 0.06);
+      --bg-deep: #010f09;
+      --bg-soft: rgba(255, 255, 255, 0.055);
       --text-main: #f2efe6;
       --text-soft: rgba(242, 239, 230, 0.78);
       --text-muted: rgba(242, 239, 230, 0.56);
-      --gold: #d4af37;
-      --gold-soft: rgba(212, 175, 55, 0.18);
-      --card-bg: rgba(0, 0, 0, 0.32);
-      --card-border: rgba(255, 255, 255, 0.09);
-      --warn-bg: rgba(212, 175, 55, 0.12);
-      --warn-border: rgba(212, 175, 55, 0.35);
-      --danger-bg: rgba(160, 45, 45, 0.18);
-      --danger-border: rgba(255, 120, 120, 0.35);
+      --gold: #c8a94b;
+      --gold-border: rgba(200, 169, 75, 0.34);
+      --glass: rgba(5, 24, 16, 0.58);
+      --card-border: rgba(255, 255, 255, 0.10);
+      --warn-bg: rgba(200, 169, 75, 0.10);
+      --warn-border: rgba(200, 169, 75, 0.28);
+      --danger-bg: rgba(160, 45, 45, 0.14);
+      --danger-border: rgba(255, 120, 120, 0.28);
     }
 
-    * {
-      box-sizing: border-box;
-    }
-
-    html {
-      min-height: 100%;
-    }
+    * { box-sizing: border-box; }
+    html { min-height: 100%; }
 
     body {
       margin: 0;
       min-height: 100vh;
       background:
-        linear-gradient(rgba(0,0,0,0.56), rgba(0,0,0,0.82)),
-        radial-gradient(circle at top, var(--bg-green) 0%, var(--bg-dark) 72%);
+        radial-gradient(circle at top left, rgba(22, 103, 61, 0.38) 0%, transparent 34%),
+        radial-gradient(circle at bottom right, rgba(200, 169, 75, 0.10) 0%, transparent 30%),
+        linear-gradient(rgba(0,0,0,0.42), rgba(0,0,0,0.82)),
+        radial-gradient(circle at top, var(--bg-green) 0%, var(--bg-dark) 68%, var(--bg-deep) 100%);
       color: var(--text-main);
       font-family: Georgia, "Times New Roman", serif;
       display: flex;
@@ -49,120 +47,54 @@
 
     .card {
       width: 100%;
-      max-width: 680px;
-      background: var(--card-bg);
+      max-width: 720px;
+      background: var(--glass);
       border: 1px solid var(--card-border);
-      border-radius: 24px;
+      border-radius: 28px;
       padding: 2rem 1.25rem;
-      backdrop-filter: blur(4px);
-      box-shadow: 0 0 30px rgba(0,0,0,0.38);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 26px 70px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.05);
     }
 
     .tpf-logo {
-      width: 124px;
-      max-width: 38vw;
+      width: 118px;
+      max-width: 36vw;
       height: auto;
       display: block;
-      margin: 0 auto 1.1rem;
-      filter: drop-shadow(0 0 14px rgba(212,175,55,0.16));
-    }
-
-    .amount-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 0.75rem;
-      margin-top: 0.8rem;
-    }
-
-    .amount-button.active {
-      background: var(--gold);
-      color: #111;
-      border-color: rgba(212,175,55,0.9);
-    }
-
-    .copy-row {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 0.75rem;
-      margin-top: 0.75rem;
-    }
-
-    .wallet-box {
-      text-align: left;
-      background: rgba(0,0,0,0.24);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px;
-      padding: 0.9rem;
-      margin-top: 1rem;
-      font-size: 0.82rem;
-      line-height: 1.55;
-      color: var(--text-soft);
-      word-break: break-word;
-    }
-
-
-    .history-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      margin-top: 1rem;
-    }
-
-    .history-item {
-      text-align: left;
-      background: rgba(0,0,0,0.24);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px;
-      padding: 0.9rem;
-      font-size: 0.86rem;
-      line-height: 1.55;
-      color: var(--text-soft);
-      word-break: break-word;
-    }
-
-    .history-item strong {
-      color: var(--text-main);
-    }
-
-    @media (min-width: 620px) {
-      .amount-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-
-      .copy-row {
-        grid-template-columns: 1fr 1fr;
-      }
+      margin: 0 auto 1.05rem;
+      filter: drop-shadow(0 0 14px rgba(200,169,75,0.15));
     }
 
     h1 {
-      font-size: clamp(1.9rem, 6vw, 2.6rem);
-      margin: 0 0 0.75rem;
+      font-size: clamp(1.9rem, 6vw, 2.65rem);
+      margin: 0 0 0.65rem;
       line-height: 1.12;
     }
 
     h2 {
-      font-size: clamp(1.35rem, 5vw, 1.75rem);
-      margin: 2rem 0 0.75rem;
+      font-size: clamp(1.25rem, 5vw, 1.62rem);
+      margin: 1.65rem 0 0.7rem;
       color: var(--gold);
+      letter-spacing: 0.01em;
     }
 
     h3 {
-      font-size: 1.05rem;
-      margin: 1.4rem 0 0.6rem;
+      font-size: 1.03rem;
+      margin: 1.25rem 0 0.55rem;
       color: var(--text-main);
     }
 
     .subtitle {
       color: var(--gold);
-      font-size: 1.05rem;
-      margin: 0 0 1.4rem;
+      font-size: 1.02rem;
+      margin: 0 0 1.25rem;
       opacity: 0.96;
     }
 
     p {
       line-height: 1.65;
       opacity: 0.92;
-      margin: 0 0 1.05rem;
+      margin: 0 0 1rem;
     }
 
     .soft {
@@ -172,17 +104,17 @@
 
     .tiny {
       color: var(--text-muted);
-      font-size: 0.82rem;
+      font-size: 0.81rem;
       line-height: 1.55;
     }
 
     .notice,
     .warning,
     .danger {
-      border-radius: 16px;
-      padding: 1rem;
-      margin: 1.1rem 0;
-      font-size: 0.93rem;
+      border-radius: 18px;
+      padding: 0.95rem;
+      margin: 1rem 0;
+      font-size: 0.91rem;
       line-height: 1.55;
     }
 
@@ -204,17 +136,31 @@
       color: var(--text-main);
     }
 
+    .section {
+      border-top: 1px solid rgba(255,255,255,0.08);
+      margin-top: 1.45rem;
+      padding-top: 1.35rem;
+    }
+
+    .support-panel {
+      background: rgba(255,255,255,0.045);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 22px;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+
     .button-row {
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
-      margin-top: 1.2rem;
+      margin-top: 1.1rem;
     }
 
     button {
-      border: none;
-      padding: 0.95rem;
-      border-radius: 14px;
+      border: 1px solid transparent;
+      padding: 0.92rem 1rem;
+      border-radius: 16px;
       font-weight: bold;
       transition: 0.2s ease;
       font-family: Georgia, "Times New Roman", serif;
@@ -224,7 +170,8 @@
 
     button:hover:not(:disabled) {
       transform: translateY(-2px);
-      opacity: 0.95;
+      opacity: 0.96;
+      box-shadow: 0 10px 26px rgba(0,0,0,0.20);
     }
 
     button:disabled {
@@ -234,66 +181,49 @@
     }
 
     .primary {
-      background: var(--gold);
-      color: #111;
+      background: linear-gradient(180deg, rgba(200,169,75,0.22), rgba(200,169,75,0.13));
+      color: var(--text-main);
+      border: 1px solid var(--gold-border);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
     }
 
     .secondary {
-      background: var(--gold-soft);
+      background: rgba(255,255,255,0.055);
       color: var(--text-main);
-      border: 1px solid rgba(212,175,55,0.28);
+      border: 1px solid rgba(255,255,255,0.11);
     }
 
     .ghost {
-      background: rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--text-soft);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+    }
+
+    .amount-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.7rem;
+      margin-top: 0.8rem;
+    }
+
+    .amount-button.active {
+      background: linear-gradient(180deg, rgba(200,169,75,0.25), rgba(200,169,75,0.14));
       color: var(--text-main);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-color: var(--gold-border);
     }
 
     .test-button {
-      text-align: left;
-      line-height: 1.35;
+      text-align: center;
+      line-height: 1.3;
+      font-size: 1.04rem;
     }
 
     .test-button span {
       display: block;
-      color: rgba(242,239,230,0.70);
-      font-size: 0.8rem;
-      font-weight: normal;
-      margin-top: 0.2rem;
-    }
-
-    #status,
-    #appStatus {
-      font-size: 0.9rem;
-      opacity: 0.9;
-      margin-top: 1.15rem;
-      margin-bottom: 0;
-      word-break: break-word;
-      min-height: 1.4em;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .welcome-name {
-      color: var(--gold);
-      font-size: 1.2rem;
-      margin-bottom: 1rem;
-    }
-
-    .footer-note {
+      color: rgba(242,239,230,0.65);
       font-size: 0.78rem;
-      opacity: 0.55;
-      margin-top: 1.8rem;
-      margin-bottom: 0;
-    }
-
-    .section {
-      border-top: 1px solid rgba(255,255,255,0.08);
-      margin-top: 1.6rem;
-      padding-top: 1.4rem;
+      font-weight: normal;
+      margin-top: 0.22rem;
     }
 
     .input-wrap {
@@ -310,10 +240,10 @@
 
     input {
       width: 100%;
-      border: 1px solid rgba(255,255,255,0.16);
-      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 16px;
       padding: 0.9rem 1rem;
-      background: rgba(0,0,0,0.28);
+      background: rgba(0,0,0,0.22);
       color: var(--text-main);
       font-family: Georgia, "Times New Roman", serif;
       font-size: 1rem;
@@ -321,8 +251,8 @@
     }
 
     input:focus {
-      border-color: rgba(212,175,55,0.7);
-      box-shadow: 0 0 0 3px rgba(212,175,55,0.12);
+      border-color: rgba(200,169,75,0.62);
+      box-shadow: 0 0 0 3px rgba(200,169,75,0.10);
     }
 
     .char-row {
@@ -334,28 +264,30 @@
       font-size: 0.8rem;
     }
 
-    .test-log {
-      text-align: left;
-      background: rgba(0,0,0,0.24);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px;
-      padding: 0.9rem;
-      margin-top: 1rem;
-      font-size: 0.82rem;
-      line-height: 1.55;
-      color: var(--text-soft);
-      white-space: pre-wrap;
+    #status,
+    #appStatus {
+      font-size: 0.9rem;
+      opacity: 0.9;
+      margin-top: 1.05rem;
+      margin-bottom: 0;
       word-break: break-word;
-      max-height: 220px;
-      overflow: auto;
+      min-height: 1.4em;
     }
 
-    .mini-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 0.75rem;
+    .hidden { display: none; }
+
+    .welcome-name {
+      color: var(--gold);
+      font-size: 1.14rem;
+      margin-bottom: 0.95rem;
     }
 
+    .footer-note {
+      font-size: 0.78rem;
+      opacity: 0.55;
+      margin-top: 1.6rem;
+      margin-bottom: 0;
+    }
 
     .history-list {
       display: flex;
@@ -366,9 +298,9 @@
 
     .history-item {
       text-align: left;
-      background: rgba(0,0,0,0.24);
+      background: rgba(0,0,0,0.20);
       border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px;
+      border-radius: 18px;
       padding: 0.9rem;
       font-size: 0.86rem;
       line-height: 1.55;
@@ -380,18 +312,44 @@
       color: var(--text-main);
     }
 
+    details {
+      text-align: left;
+      margin-top: 1rem;
+      background: rgba(0,0,0,0.18);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 0.85rem;
+      color: var(--text-soft);
+    }
+
+    summary {
+      cursor: pointer;
+      color: var(--gold);
+      font-weight: bold;
+    }
+
+    .test-log {
+      text-align: left;
+      background: rgba(0,0,0,0.22);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 0.85rem;
+      margin-top: 0.8rem;
+      font-size: 0.8rem;
+      line-height: 1.55;
+      color: var(--text-soft);
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 190px;
+      overflow: auto;
+    }
+
+    a { color: var(--gold); }
+
     @media (min-width: 620px) {
-      body {
-        padding: 2rem;
-      }
-
-      .card {
-        padding: 2.7rem 2rem;
-      }
-
-      .mini-grid {
-        grid-template-columns: 1fr 1fr;
-      }
+      body { padding: 2rem; }
+      .card { padding: 2.7rem 2.1rem; }
+      .amount-grid { grid-template-columns: repeat(3, 1fr); }
     }
   </style>
 
@@ -488,71 +446,81 @@
       </p>
 
       <p>
-        This is the Testnet Donation Lab.
-      </p>
-
-      <p class="soft">
-        Help us test notes, payment amounts, transaction visibility, and future participation flows.
+        A calm Pi-powered forest journey where transparency, participation and real-world impact can grow step by step.
       </p>
 
       <div class="danger">
-        Testnet only — no real Pi donation, no real tree planting, no CO₂ credit.
+        Testnet preview — no real Pi donation, no real tree planting, no CO₂ credit.
       </div>
 
+      <section class="section">
+        <h2>About</h2>
+        <p class="soft">
+          The Pioneer Forest explores how Pi can support reforestation, transparent records and meaningful community participation.
+        </p>
+        <p class="tiny">
+          This version is still an early Testnet prototype. Mainnet support, tree planting, CO₂ tracking and public ecosystem listing are not active yet.
+        </p>
+      </section>
+
       <section class="section" id="donationLab">
-        <h2>Testnet Donation Lab</h2>
+        <h2>Support Preview</h2>
 
         <p class="soft">
-          Choose a Test Pi amount and send a Testnet payment through the Pi SDK. This is only for testing the future TPF app flow.
+          Choose a Test Pi amount and try the future support flow.
         </p>
 
-        <div class="notice">
-          Current test result: SDK payment notes are visible in the Pi Wallet screen, but Block Explorer shows a Pi-generated internal memo. So this version does not rely on notes for attribution.
-        </div>
+        <div class="support-panel">
+          <h3>Choose amount</h3>
 
-        <h3>Choose Test Pi amount</h3>
+          <div class="amount-grid">
+            <button class="secondary amount-button active" data-amount="1">
+              1 Test Pi
+            </button>
 
-        <div class="amount-grid">
-          <button class="secondary amount-button active" data-amount="1">
-            1 Test Pi
-          </button>
+            <button class="secondary amount-button" data-amount="3">
+              3 Test Pi
+            </button>
 
-          <button class="secondary amount-button" data-amount="3">
-            3 Test Pi
-          </button>
-
-          <button class="secondary amount-button" data-amount="5">
-            5 Test Pi
-          </button>
-        </div>
-
-        <div class="input-wrap">
-          <label for="customAmount">Or enter custom Test Pi amount</label>
-          <input id="customAmount" inputmode="decimal" placeholder="Example: 0.01" autocomplete="off" />
-          <div class="char-row">
-            <span>Leave empty to use the selected preset amount.</span>
-            <span id="selectedAmountLabel">Selected: 1 Test Pi</span>
+            <button class="secondary amount-button" data-amount="5">
+              5 Test Pi
+            </button>
           </div>
+
+          <div class="input-wrap">
+            <label for="customAmount">Or enter custom Test Pi amount</label>
+            <input id="customAmount" inputmode="decimal" placeholder="Example: 0.01" autocomplete="off" />
+            <div class="char-row">
+              <span>Leave empty to use the selected amount.</span>
+              <span id="selectedAmountLabel">Selected: 1 Test Pi</span>
+            </div>
+          </div>
+
+          <div class="button-row">
+            <button class="primary test-button" id="sdkPaymentBtn">
+              🌱 Continue
+              <span>Testnet only</span>
+            </button>
+          </div>
+
+          <p id="appStatus">
+            Choose an amount, then continue.
+          </p>
         </div>
 
-        <div class="button-row">
-          <button class="primary test-button" id="sdkPaymentBtn">
-            Send Testnet Payment
-            <span>Uses Pi SDK User-to-App payment. No real donation.</span>
-          </button>
-        </div>
-
-        <p id="appStatus">
-          Logged in. Choose an amount, then start a Testnet payment.
-        </p>
-
-        <div class="test-log" id="testLog">Test log will appear here.</div>
+        <details>
+          <summary>Technical details</summary>
+          <p class="tiny">
+            SDK payment notes are visible in the Pi Wallet screen, but Block Explorer shows a Pi-generated internal memo. This version does not rely on notes for attribution.
+          </p>
+          <div class="test-log" id="testLog">Test log will appear here.</div>
+        </details>
 
         <section class="section">
           <h2>Activity & History</h2>
 
           <p class="soft">
-            This local history records Testnet activity in this browser only. It is not a public ledger and not a real donation history yet.
+            Local Testnet activity in this browser only.
           </p>
 
           <div class="history-list" id="historyList">
@@ -574,22 +542,12 @@
       </section>
 
       <section class="section">
-        <h2>About</h2>
-        <p class="soft">
-          The Pioneer Forest is an evolving community project exploring how Pi can support reforestation, transparent impact and meaningful participation.
-        </p>
-        <p class="tiny">
-          This app version is only a technical Testnet prototype. Mainnet donation logic, tree planting, CO₂ tracking and ecosystem listing are not active yet.
-        </p>
-      </section>
-
-      <section class="section">
         <h2>Forest Music</h2>
         <p class="soft">
           Featured identity track: I Dreamed a Forest — Awakening.
         </p>
         <p class="tiny">
-          Music and story sections will stay lightweight until payment and transparency behavior is tested properly.
+          Music and story sections will stay lightweight until the app structure is stable.
         </p>
       </section>
 
@@ -768,13 +726,15 @@
       historyList.innerHTML = items.map(function (item) {
         const txLine = item.txid ? '<br /><strong>TX ID:</strong> ' + escapeHtml(item.txid) : "";
         const paymentLine = item.paymentId ? '<br /><strong>Payment ID:</strong> ' + escapeHtml(item.paymentId) : "";
+        const details = paymentLine || txLine
+          ? '<details><summary>Payment details</summary><p class="tiny">' + paymentLine + txLine + '</p></details>'
+          : "";
 
         return '<div class="history-item">' +
-          '<strong>' + escapeHtml(item.dateLabel) + '</strong><br />' +
-          escapeHtml(item.amount) + ' Test Pi payment completed' +
+          '<strong>' + escapeHtml(item.amount) + ' Test Pi</strong><br />' +
+          escapeHtml(item.dateLabel) +
           '<br /><em>"' + escapeHtml(item.message) + '"</em>' +
-          paymentLine +
-          txLine +
+          details +
           '</div>';
       }).join("");
     }
@@ -813,7 +773,7 @@
       };
 
       setPaymentDisabled(true);
-      showAppStatus("Creating Testnet payment: " + amount + " Test Pi");
+      showAppStatus("Opening Testnet payment: " + amount + " Test Pi");
       logTest("Starting SDK payment", activePayment);
 
       const paymentData = {
@@ -892,7 +852,7 @@
             dateLabel: new Date().toLocaleString()
           });
 
-          showAppStatus("Payment completed. Local Activity & History updated.");
+          showAppStatus("Thank you. Your local activity was updated.");
           setPaymentDisabled(false);
         },
 
