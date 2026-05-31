@@ -316,55 +316,6 @@
       z-index: 1;
     }
 
-
-    .forest-fact {
-      color: var(--text-soft);
-      font-size: 0.93rem;
-      line-height: 1.55;
-      margin: 0.2rem 0 1rem;
-      padding: 0.85rem;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.035);
-      border: 1px solid rgba(255,255,255,0.07);
-    }
-
-    .signout-button {
-      margin-top: 1rem;
-      background: rgba(255, 255, 255, 0.06);
-      color: var(--text-main);
-      border: 1px solid rgba(200,169,75,0.24);
-      box-shadow: none;
-      font-size: 0.9rem;
-    }
-
-    .signout-button:hover:not(:disabled) {
-      color: var(--gold);
-      border-color: rgba(200,169,75,0.44);
-    }
-
-    .history-message {
-      display: block;
-      color: var(--text-main);
-      font-size: 0.98rem;
-      margin-bottom: 0.55rem;
-    }
-
-    .menu-shell {
-      background:
-        radial-gradient(circle at top, rgba(200,169,75,0.13), transparent 46%),
-        linear-gradient(180deg, rgba(3, 23, 13, 0.92), rgba(1, 15, 9, 0.78));
-      border: 1px solid rgba(200,169,75,0.34);
-      border-radius: 26px;
-      padding: 1rem;
-      margin-top: 1.1rem;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 18px 40px rgba(0,0,0,0.24);
-    }
-
-    .menu-card {
-      background: rgba(0,0,0,0.18);
-      border: 1px solid rgba(200,169,75,0.18);
-    }
-
     a { color: var(--gold); }
 
     @media (min-width: 620px) {
@@ -457,7 +408,7 @@
       <a class="button-link secondary" href="myforest.html">My Forest</a>
     </div>
 
-    <button class="signout-button" id="logoutBtn">👤 Sign Out</button>
+    <button class="logout-link" id="logoutBtn">Log out locally</button>
 
     <p class="footer-note">Development preview — Testnet phase</p>
 
@@ -495,7 +446,7 @@
       localStorage.removeItem("tpf_last_login");
       currentUser = null;
       currentAccessToken = null;
-      window.location.href = "index.html";
+      showAppStatus("Logged out locally. Go Home to login again before sending Test Pi.");
     }
 
     function logTest(message, data) {
@@ -568,9 +519,11 @@
 
     function setPaymentDisabled(disabled) {
       sdkPaymentBtn.disabled = disabled;
-      amountButtons.forEach(function (button) {
-        button.disabled = disabled;
-      });
+      if (logoutBtn) {
+      logoutBtn.addEventListener("click", localLogout);
+    }
+
+    amountButtons.forEach(function (button) { button.disabled = disabled; });
       customAmount.disabled = disabled;
     }
 
@@ -666,11 +619,6 @@
 
       if (amount === null) {
         showAppStatus("Please enter a valid amount.");
-        return;
-      }
-
-      if (!localStorage.getItem("tpf_username")) {
-        showAppStatus("Please login from the Home page first.");
         return;
       }
 
