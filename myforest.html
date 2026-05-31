@@ -244,6 +244,78 @@
       overflow: auto;
     }
 
+
+    .logout-link {
+      margin-top: 0.8rem;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      text-decoration: underline;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      padding: 0.25rem;
+      font-weight: normal;
+    }
+
+    .logout-link:hover:not(:disabled) {
+      transform: none;
+      box-shadow: none;
+      color: var(--gold);
+    }
+
+    .history-topline {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: baseline;
+      margin-top: 0.35rem;
+      flex-wrap: wrap;
+    }
+
+    .history-amount {
+      color: var(--gold);
+      font-size: 1.12rem;
+      font-weight: bold;
+    }
+
+    .history-date {
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      text-align: right;
+      margin-left: auto;
+    }
+
+    .menu-shell {
+      background:
+        radial-gradient(circle at top, rgba(200,169,75,0.08), transparent 42%),
+        rgba(0,0,0,0.18);
+      border: 1px solid rgba(200,169,75,0.14);
+      border-radius: 24px;
+      padding: 1rem;
+      margin-top: 1.1rem;
+    }
+
+    .menu-card {
+      position: relative;
+      overflow: hidden;
+      min-height: 112px;
+      text-align: left;
+    }
+
+    .menu-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(200,169,75,0.08), transparent 55%);
+      pointer-events: none;
+    }
+
+    .menu-card h3,
+    .menu-card p {
+      position: relative;
+      z-index: 1;
+    }
+
     a { color: var(--gold); }
 
     @media (min-width: 620px) {
@@ -285,9 +357,11 @@
 
     <div class="nav-grid">
       <a class="button-link ghost" href="index.html">Home</a>
-      <a class="button-link primary" href="support.html">Support Preview</a>
+      <a class="button-link primary" href="support.html">Support The Forest</a>
       <a class="button-link secondary" href="menu.html">Menu</a>
     </div>
+
+    <button class="logout-link" id="logoutBtn">Log out locally</button>
 
     <p class="footer-note">Development preview — Testnet phase</p>
 
@@ -297,6 +371,7 @@
     const historyList = document.getElementById("historyList");
     const clearHistoryBtn = document.getElementById("clearHistoryBtn");
     const profileName = document.getElementById("profileName");
+    const logoutBtn = document.getElementById("logoutBtn");
 
     function getUsername() {
       return localStorage.getItem("tpf_username") || "unknown";
@@ -345,18 +420,32 @@
           : "";
 
         return '<div class="history-item">' +
-          '<strong>' + escapeHtml(item.amount) + ' Test Pi</strong><br />' +
-          escapeHtml(item.dateLabel) +
-          '<br /><em>"' + escapeHtml(item.message) + '"</em>' +
+          '<strong>Thank you for walking with The Pioneer Forest.</strong><br />' +
+          '<em>"' + escapeHtml(item.message) + '"</em>' +
+          '<div class="history-topline">' +
+          '<span class="history-amount">' + escapeHtml(item.amount) + ' Test Pi</span>' +
+          '<span class="history-date">' + escapeHtml(item.dateLabel) + '</span>' +
+          '</div>' +
           details +
           '</div>';
       }).join("");
+    }
+
+    function localLogout() {
+      localStorage.removeItem("tpf_username");
+      localStorage.removeItem("tpf_last_login");
+      profileName.textContent = "Logged out locally 🌱";
+      historyList.innerHTML = '<div class="history-item">You are locally logged out. Go Home to login again.</div>';
     }
 
     clearHistoryBtn.addEventListener("click", function () {
       localStorage.removeItem(historyKey());
       renderHistory();
     });
+
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", localLogout);
+    }
 
     renderHistory();
   </script>

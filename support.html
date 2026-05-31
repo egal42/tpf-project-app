@@ -244,6 +244,78 @@
       overflow: auto;
     }
 
+
+    .logout-link {
+      margin-top: 0.8rem;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      text-decoration: underline;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      padding: 0.25rem;
+      font-weight: normal;
+    }
+
+    .logout-link:hover:not(:disabled) {
+      transform: none;
+      box-shadow: none;
+      color: var(--gold);
+    }
+
+    .history-topline {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: baseline;
+      margin-top: 0.35rem;
+      flex-wrap: wrap;
+    }
+
+    .history-amount {
+      color: var(--gold);
+      font-size: 1.12rem;
+      font-weight: bold;
+    }
+
+    .history-date {
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      text-align: right;
+      margin-left: auto;
+    }
+
+    .menu-shell {
+      background:
+        radial-gradient(circle at top, rgba(200,169,75,0.08), transparent 42%),
+        rgba(0,0,0,0.18);
+      border: 1px solid rgba(200,169,75,0.14);
+      border-radius: 24px;
+      padding: 1rem;
+      margin-top: 1.1rem;
+    }
+
+    .menu-card {
+      position: relative;
+      overflow: hidden;
+      min-height: 112px;
+      text-align: left;
+    }
+
+    .menu-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(200,169,75,0.08), transparent 55%);
+      pointer-events: none;
+    }
+
+    .menu-card h3,
+    .menu-card p {
+      position: relative;
+      z-index: 1;
+    }
+
     a { color: var(--gold); }
 
     @media (min-width: 620px) {
@@ -283,10 +355,10 @@
   <main class="card">
     <img class="tpf-logo" src="assets/tpf-logo.png" alt="The Pioneer Forest logo" />
 
-    <h1>Support Preview</h1>
+    <h1>Support The Forest</h1>
 
     <p class="soft">
-      Choose a Test Pi amount and try the future support flow.
+      Choose a Test Pi amount and walk through the future support flow.
     </p>
 
     <div class="danger">
@@ -314,12 +386,12 @@
 
         <div class="button-row">
           <button class="primary test-button" id="sdkPaymentBtn">
-            🌱 Continue
-            <span>Testnet only</span>
+            🌱 Send Test Pi
+              <span>Testnet support preview</span>
           </button>
         </div>
 
-        <p id="appStatus">Choose an amount, then continue.</p>
+        <p id="appStatus">Choose an amount, then send Test Pi.</p>
       </div>
 
       <details>
@@ -335,6 +407,8 @@
       <a class="button-link ghost" href="index.html">Home</a>
       <a class="button-link secondary" href="myforest.html">My Forest</a>
     </div>
+
+    <button class="logout-link" id="logoutBtn">Log out locally</button>
 
     <p class="footer-note">Development preview — Testnet phase</p>
 
@@ -355,12 +429,24 @@
     const selectedAmountLabel = document.getElementById("selectedAmountLabel");
     const appStatusEl = document.getElementById("appStatus");
     const testLog = document.getElementById("testLog");
+    const logoutBtn = document.getElementById("logoutBtn");
 
     let selectedAmount = 1;
+    let currentUser = null;
+    let currentAccessToken = null;
     let activePayment = null;
+    let isAuthenticating = false;
 
     function showAppStatus(message) {
       appStatusEl.textContent = message;
+    }
+
+    function localLogout() {
+      localStorage.removeItem("tpf_username");
+      localStorage.removeItem("tpf_last_login");
+      currentUser = null;
+      currentAccessToken = null;
+      showAppStatus("Logged out locally. Go Home to login again before sending Test Pi.");
     }
 
     function logTest(message, data) {
@@ -369,25 +455,30 @@
 
       if (data !== undefined) {
         try {
-          line += "\\n" + JSON.stringify(data, null, 2);
+          line += "\n" + JSON.stringify(data, null, 2);
         } catch (error) {
-          line += "\\n" + String(data);
+          line += "\n" + String(data);
         }
       }
 
       if (!testLog || testLog.textContent === "Test log will appear here.") {
         testLog.textContent = line;
       } else {
-        testLog.textContent = line + "\\n\\n" + testLog.textContent;
+        testLog.textContent = line + "\n\n" + testLog.textContent;
       }
-    }
-
-    function getUsername() {
-      return localStorage.getItem("tpf_username") || "unknown";
     }
 
     function isPiSdkAvailable() {
       return !!window.Pi;
+    }
+
+    function withTimeout(promise, milliseconds, timeoutMessage) {
+      return Promise.race([
+        promise,
+        new Promise(function (_, reject) {
+          setTimeout(function () { reject(new Error(timeoutMessage)); }, milliseconds);
+        })
+      ]);
     }
 
     function getPaymentId(paymentData) {
@@ -397,7 +488,11 @@
     }
 
     function historyKey() {
-      return HISTORY_PREFIX + getUsername();
+      const username = currentUser && currentUser.username
+        ? currentUser.username
+        : (localStorage.getItem("tpf_username") || "unknown");
+
+      return HISTORY_PREFIX + username;
     }
 
     function loadHistory() {
@@ -424,7 +519,11 @@
 
     function setPaymentDisabled(disabled) {
       sdkPaymentBtn.disabled = disabled;
-      amountButtons.forEach(function (button) { button.disabled = disabled; });
+      if (logoutBtn) {
+      logoutBtn.addEventListener("click", localLogout);
+    }
+
+    amountButtons.forEach(function (button) { button.disabled = disabled; });
       customAmount.disabled = disabled;
     }
 
@@ -451,16 +550,68 @@
       updateSelectedAmountLabel();
     }
 
+    async function ensurePiAuth() {
+      if (currentUser && currentUser.username) {
+        return currentUser;
+      }
+
+      if (isAuthenticating) {
+        throw new Error("Authentication already in progress.");
+      }
+
+      if (!window.Pi || typeof window.Pi.authenticate !== "function") {
+        throw new Error("Pi SDK not available. Open this app inside Pi Browser.");
+      }
+
+      isAuthenticating = true;
+      showAppStatus("Checking Pi login...");
+
+      try {
+        const initReady = await withTimeout(
+          window.tpfPiReady || Promise.resolve(true),
+          8000,
+          "Pi SDK init timed out."
+        );
+
+        if (!initReady) {
+          throw new Error("Pi SDK init failed. Please reload inside Pi Browser.");
+        }
+
+        const auth = await withTimeout(
+          window.Pi.authenticate(
+            ["username", "payments"],
+            function onIncompletePaymentFound(payment) {
+              console.log("Incomplete payment found:", payment);
+              logTest("Incomplete payment found", payment);
+            }
+          ),
+          12000,
+          "Pi login timed out."
+        );
+
+        if (!auth || !auth.user || !auth.user.username) {
+          throw new Error("Pi login did not return a username.");
+        }
+
+        currentUser = auth.user;
+        currentAccessToken = auth.accessToken || null;
+        localStorage.setItem("tpf_username", currentUser.username);
+        localStorage.setItem("tpf_last_login", new Date().toISOString());
+
+        logTest("Support page login ready", {
+          username: currentUser.username,
+          hasAccessToken: !!currentAccessToken
+        });
+
+        return currentUser;
+      } finally {
+        isAuthenticating = false;
+      }
+    }
+
     async function createSdkPayment() {
       if (!isPiSdkAvailable()) {
         showAppStatus("Pi SDK not available. Please open this app inside Pi Browser.");
-        return;
-      }
-
-      const username = getUsername();
-
-      if (username === "unknown") {
-        showAppStatus("Please login from the Home page first.");
         return;
       }
 
@@ -471,124 +622,132 @@
         return;
       }
 
-      activePayment = {
-        amount: amount,
-        username: username,
-        startedAt: new Date().toISOString()
-      };
+      try {
+        const user = await ensurePiAuth();
+        const username = user.username;
 
-      setPaymentDisabled(true);
-      showAppStatus("Opening Testnet payment: " + amount + " Test Pi");
-      logTest("Starting SDK payment", activePayment);
-
-      const paymentData = {
-        amount: amount,
-        memo: "TPF Testnet",
-        metadata: {
-          app: "The Pioneer Forest Project",
-          type: "testnet_payment_history_lab",
-          paymentMode: "sdk_user_to_app",
+        activePayment = {
+          amount: amount,
           username: username,
-          selectedAmount: amount
-        }
-      };
+          startedAt: new Date().toISOString()
+        };
 
-      const paymentCallbacks = {
-        onReadyForServerApproval: async function (paymentDTO) {
-          const paymentId = getPaymentId(paymentDTO);
+        setPaymentDisabled(true);
+        showAppStatus("Opening Testnet payment: " + amount + " Test Pi");
+        logTest("Starting SDK payment", activePayment);
 
-          showAppStatus("Approving payment on server...");
-          logTest("onReadyForServerApproval", {
-            paymentId: paymentId,
-            rawPaymentDTO: paymentDTO,
-            activePayment: activePayment
-          });
+        const paymentData = {
+          amount: amount,
+          memo: "TPF Testnet",
+          metadata: {
+            app: "The Pioneer Forest Project",
+            type: "testnet_payment_history_lab",
+            paymentMode: "sdk_user_to_app",
+            username: username,
+            selectedAmount: amount
+          }
+        };
 
-          const response = await fetch("/.netlify/functions/approve-payment", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
+        const paymentCallbacks = {
+          onReadyForServerApproval: async function (paymentDTO) {
+            const paymentId = getPaymentId(paymentDTO);
+
+            showAppStatus("Approving payment on server...");
+            logTest("onReadyForServerApproval", {
               paymentId: paymentId,
-              amount: amount,
-              username: username
-            })
-          });
+              rawPaymentDTO: paymentDTO,
+              activePayment: activePayment
+            });
 
-          const data = await response.json();
-          console.log("Approval response:", data);
-          logTest("Approval response", data);
-        },
+            const response = await fetch("/.netlify/functions/approve-payment", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                paymentId: paymentId,
+                amount: amount,
+                username: username
+              })
+            });
 
-        onReadyForServerCompletion: async function (paymentDTO, txid) {
-          const paymentId = getPaymentId(paymentDTO);
+            const data = await response.json();
+            console.log("Approval response:", data);
+            logTest("Approval response", data);
+          },
 
-          showAppStatus("Completing payment on server...");
-          logTest("onReadyForServerCompletion", {
-            paymentId: paymentId,
-            txid: txid,
-            rawPaymentDTO: paymentDTO,
-            activePayment: activePayment
-          });
+          onReadyForServerCompletion: async function (paymentDTO, txid) {
+            const paymentId = getPaymentId(paymentDTO);
 
-          const response = await fetch("/.netlify/functions/complete-payment", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
+            showAppStatus("Completing payment on server...");
+            logTest("onReadyForServerCompletion", {
               paymentId: paymentId,
               txid: txid,
+              rawPaymentDTO: paymentDTO,
+              activePayment: activePayment
+            });
+
+            const response = await fetch("/.netlify/functions/complete-payment", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                paymentId: paymentId,
+                txid: txid,
+                amount: amount,
+                username: username
+              })
+            });
+
+            const data = await response.json();
+            console.log("Completion response:", data);
+            logTest("Completion response", data);
+
+            addHistoryItem({
+              type: "testnet_payment",
+              username: username,
               amount: amount,
-              username: username
-            })
-          });
+              paymentId: paymentId,
+              txid: txid,
+              status: "completed",
+              message: randomForestMessage(),
+              dateIso: new Date().toISOString(),
+              dateLabel: new Date().toLocaleString()
+            });
 
-          const data = await response.json();
-          console.log("Completion response:", data);
-          logTest("Completion response", data);
+            showAppStatus("Thank you. Your local activity was updated.");
+            setPaymentDisabled(false);
+            window.location.href = "myforest.html";
+          },
 
-          addHistoryItem({
-            type: "testnet_payment",
-            username: username,
-            amount: amount,
-            paymentId: paymentId,
-            txid: txid,
-            status: "completed",
-            message: randomForestMessage(),
-            dateIso: new Date().toISOString(),
-            dateLabel: new Date().toLocaleString()
-          });
+          onCancel: function (paymentDTO) {
+            console.log("Payment cancelled:", paymentDTO);
+            logTest("Payment cancelled", paymentDTO);
+            showAppStatus("Payment cancelled.");
+            setPaymentDisabled(false);
+          },
 
-          showAppStatus("Thank you. Your local activity was updated.");
-          setPaymentDisabled(false);
-          window.location.href = "myforest.html";
-        },
+          onError: function (error, paymentDTO) {
+            console.error("Payment error:", error, paymentDTO);
+            logTest("Payment error", {
+              error: error && error.message ? error.message : error,
+              paymentDTO: paymentDTO,
+              activePayment: activePayment
+            });
+            showAppStatus("Payment error. Check logs.");
+            setPaymentDisabled(false);
+          }
+        };
 
-        onCancel: function (paymentDTO) {
-          console.log("Payment cancelled:", paymentDTO);
-          logTest("Payment cancelled", paymentDTO);
-          showAppStatus("Payment cancelled.");
-          setPaymentDisabled(false);
-        },
-
-        onError: function (error, paymentDTO) {
-          console.error("Payment error:", error, paymentDTO);
-          logTest("Payment error", {
-            error: error && error.message ? error.message : error,
-            paymentDTO: paymentDTO,
-            activePayment: activePayment
-          });
-          showAppStatus("Payment error. Check logs.");
-          setPaymentDisabled(false);
-        }
-      };
-
-      try {
         window.Pi.createPayment(paymentData, paymentCallbacks);
+
       } catch (error) {
-        console.error("Create payment error:", error);
-        logTest("Create payment failed", error && error.message ? error.message : error);
-        showAppStatus("Could not create payment.");
+        console.error("Payment setup error:", error);
+        logTest("Payment setup failed", error && error.message ? error.message : error);
+        showAppStatus(error && error.message ? error.message : "Could not create payment.");
         setPaymentDisabled(false);
       }
+    }
+
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", localLogout);
     }
 
     amountButtons.forEach(function (button) {
@@ -600,7 +759,21 @@
     customAmount.addEventListener("input", updateSelectedAmountLabel);
     sdkPaymentBtn.addEventListener("click", createSdkPayment);
     updateSelectedAmountLabel();
+
+    window.addEventListener("load", function () {
+      const storedUsername = localStorage.getItem("tpf_username");
+      if (storedUsername) {
+        showAppStatus("Logged in as @" + storedUsername + ". Choose an amount, then send Test Pi.");
+      }
+
+      setTimeout(function () {
+        if (!isPiSdkAvailable()) {
+          showAppStatus("Pi SDK not available. Please open this app inside Pi Browser.");
+        }
+      }, 1000);
+    });
   </script>
+
 
 </body>
 </html>
