@@ -9,6 +9,7 @@
 html,body{margin:0;background:#03170d;color:#f2efe6;}
 </style>
 <title>My Forest</title>
+<link rel="manifest" href="manifest.json" />
 <link rel="stylesheet" href="assets/styles.css" />
 </head>
 <body>
@@ -50,5 +51,12 @@ html,body{margin:0;background:#03170d;color:#f2efe6;}
 
 <script src="assets/app-common.js"></script>
 <script src="assets/myforest.js"></script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("sw.js").catch(function () {});
+  });
+}
+</script>
 </body>
 </html>

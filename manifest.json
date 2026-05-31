@@ -1,0 +1,9 @@
+{
+  "name": "The Pioneer Forest",
+  "short_name": "TPF",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#03170d",
+  "theme_color": "#03170d",
+  "description": "A Pi-powered forest journey for Testnet support flow testing."
+}
