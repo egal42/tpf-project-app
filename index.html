@@ -5,9 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="theme-color" content="#03170d" />
 <meta name="color-scheme" content="dark" />
-<style>
-html,body{margin:0;background:#03170d;color:#f2efe6;}
-</style>
+<style>html,body{margin:0;background:#03170d;color:#f2efe6;}</style>
 <title>The Pioneer Forest Project</title>
 <link rel="manifest" href="manifest.json" />
 <link rel="stylesheet" href="assets/styles.css" />
@@ -17,95 +15,45 @@ html,body{margin:0;background:#03170d;color:#f2efe6;}
 <body>
 <main class="card">
   <img class="tpf-logo" src="assets/tpf-logo.png" alt="The Pioneer Forest logo" />
-
-  <section id="loginScreen">
+  <section id="screen-login">
     <h1>The Pioneer Forest Project</h1>
-
     <p class="subtitle">Pi-powered forest journeys</p>
-
-    <p>
-      <em>Not every journey begins with a destination.<br />
-      Some begin with a seed.</em>
-    </p>
-
-    <p class="soft">
-      Welcome to the Testnet preview of The Pioneer Forest.
-    </p>
-
-    <p class="soft">
-      This app is designed for Pi Browser and helps us test future features before Mainnet.
-    </p>
-
-    <p class="tiny">
-      Testnet only • No real Pi donations
-    </p>
-
-    <div id="browserWarning" class="warning hidden">
-      <strong>Pi Browser required.</strong><br />
-      This preview uses Pi Network login and Testnet payment features. Please open it inside Pi Browser to continue.<br /><br />
-      <a href="https://minepi.com/pi-browser/" target="_blank" rel="noopener">Download Pi Browser</a>
-    </div>
-
-    <div class="button-row">
-      <button class="primary" id="loginBtn">Enter with Pi Login</button>
-    </div>
-
+    <p><em>Not every journey begins with a destination.<br />Some begin with a seed.</em></p>
+    <p class="soft">Welcome to the Testnet preview of The Pioneer Forest.</p>
+    <p class="soft">This app is designed for Pi Browser and helps us test future features before Mainnet.</p>
+    <p class="tiny">Testnet only • No real Pi donations</p>
+    <div id="browserWarning" class="warning hidden"><strong>Pi Browser required.</strong><br />This preview uses Pi Network login and Testnet payment features. Please open it inside Pi Browser to continue.<br /><br /><a href="https://minepi.com/pi-browser/" target="_blank" rel="noopener">Download Pi Browser</a></div>
+    <div class="button-row"><button class="primary" id="loginBtn">Enter with Pi Login</button></div>
     <p id="status">Ready for Pi login.</p>
   </section>
-
-  <section id="homeScreen" class="hidden">
+  <section id="app-shell" class="hidden">
     <h1>The Pioneer Forest</h1>
-
     <p class="welcome-name" id="welcomeName">Welcome back, @Pioneer 🌱</p>
-
     <p id="forestFact" class="forest-fact">🌳 Forests are living systems of roots, water, soil and time.</p>
-
-    <p>
-      A calm Pi-powered forest journey where transparency, participation and real-world impact can grow step by step.
-    </p>
-
-    <div class="danger">
-      Testnet preview — no real Pi donation, no real tree planting, no CO₂ credit.
-    </div>
-
-    <section class="section">
-      <h2>About</h2>
-      <p class="soft">
-        The Pioneer Forest explores how Pi can support reforestation, transparent records and meaningful community participation.
-      </p>
-      <p class="soft">
-        This first Testnet version keeps things simple: Pi login, a support preview, and a small personal activity history.
-      </p>
+    <nav class="app-nav" aria-label="App navigation">
+      <button class="ghost nav-button active" data-screen-target="home">Home</button>
+      <button class="ghost nav-button" data-screen-target="support">Support</button>
+      <button class="ghost nav-button" data-screen-target="myforest">My Forest</button>
+      <button class="ghost nav-button" data-screen-target="more">More</button>
+    </nav>
+    <section class="app-screen active" data-screen="home">
+      <p>A calm Pi-powered forest journey where transparency, participation and real-world impact can grow step by step.</p>
+      <div class="danger">Testnet preview — no real Pi donation, no real tree planting, no CO₂ credit.</div>
+      <section class="section"><h2>About</h2><p class="soft">The Pioneer Forest explores how Pi can support reforestation, transparent records and meaningful community participation.</p><p class="soft">This first Testnet version keeps things simple: Pi login, a support preview, and a small personal activity history.</p></section>
+      <div class="nav-grid"><button class="primary" data-screen-target="support">🌱 Support The Forest</button><button class="secondary" data-screen-target="myforest">My Forest</button><button class="ghost" data-screen-target="more">More Paths</button></div>
     </section>
-
-    <div class="nav-grid">
-      <a class="button-link primary" href="support.html">🌱 Support The Forest</a>
-      <a class="button-link secondary" href="myforest.html">My Forest</a>
-      <a class="button-link ghost" href="menu.html">More Paths</a>
-    </div>
+    <section class="app-screen" data-screen="support">
+      <h2>Support The Forest</h2><p class="soft">Choose a Test Pi amount and walk through the future support flow.</p><div class="danger">Testnet only — no real Pi donation, no real tree planting, no CO₂ credit.</div>
+      <div class="support-panel"><h3>Choose amount</h3><div class="amount-grid"><button class="secondary amount-button active" data-amount="1">1 Test Pi</button><button class="secondary amount-button" data-amount="3">3 Test Pi</button><button class="secondary amount-button" data-amount="5">5 Test Pi</button></div><div class="input-wrap"><label for="customAmount">Or enter custom Test Pi amount</label><input id="customAmount" inputmode="decimal" placeholder="Example: 0.01" autocomplete="off" /><div class="char-row"><span>Leave empty to use the selected amount.</span><span id="selectedAmountLabel">Selected: 1 Test Pi</span></div></div><div class="button-row"><button class="primary test-button" id="sdkPaymentBtn">🌱 Send Test Pi<span>Testnet support preview</span></button></div><p id="appStatus">Choose an amount, then send Test Pi.</p></div>
+      <details><summary>Technical details</summary><p class="tiny">SDK payment notes are visible in the Pi Wallet screen, but Block Explorer shows a Pi-generated internal memo. This version does not rely on notes for attribution.</p><div class="test-log" id="testLog">Test log will appear here.</div></details>
+    </section>
+    <section class="app-screen" data-screen="myforest"><h2>My Forest</h2><p class="welcome-name" id="profileName">Welcome, Pioneer 🌱</p><p class="soft">Your local Testnet activity in this browser.</p><section class="section"><div class="history-list" id="historyList"><div class="history-item">No local activity yet.</div></div><div class="button-row"><button class="ghost" id="clearHistoryBtn">Clear local history</button></div><p class="tiny">Later, real Mainnet history should be saved server-side with minimal data: username, payment ID, txid, amount, date and status.</p></section></section>
+    <section class="app-screen" data-screen="more"><h2>More Paths</h2><p class="soft">Future paths for music, public signals, impact records and updates.</p><section class="section"><div class="menu-shell"><div class="menu-grid"><div class="menu-card"><h3>Forest Music</h3><p class="tiny">Featured identity track: I Dreamed a Forest — Awakening.</p></div><div class="menu-card"><h3>Public Forest Signals</h3><p class="tiny">Future opt-in public supporter view. No ranking.</p></div><div class="menu-card"><h3>Impact Records</h3><p class="tiny">Later: real donations, planting records, CO₂ and certificates.</p></div><div class="menu-card"><h3>Project Updates</h3><p class="tiny">Later: Pi-native updates and Fireside transparency links.</p></div></div></div></section></section>
+    <button class="signout-button" id="signOutBtn">👤 Sign Out</button>
   </section>
-
-  <button class="signout-button hidden" id="signOutBtn">👤 Sign Out</button>
-
   <p class="footer-note">Development preview — Testnet phase</p>
 </main>
-
 <script src="assets/app-common.js"></script>
-<script src="assets/home.js"></script>
-<script>
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.getRegistrations().then(function(regs) {
-    regs.forEach(function(reg) { reg.unregister(); });
-  }).catch(function(){});
-}
-if (window.caches) {
-  caches.keys().then(function(keys) {
-    keys.forEach(function(key) {
-      if (String(key).indexOf("tpf-") === 0) caches.delete(key);
-    });
-  }).catch(function(){});
-}
-</script>
-
+<script src="assets/app.js"></script>
 </body>
 </html>
