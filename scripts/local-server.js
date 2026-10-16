@@ -19,7 +19,7 @@ const server = http.createServer(async (req,res) => {
     try {
       let body='';
       for await (const part of req) {body+=part;if(body.length>4096){res.writeHead(413);res.end();return;}}
-      const result=await require('./preview-backend').handle(action,{httpMethod:req.method,headers:req.headers,body});
+      const result=await require('./preview-backend').handle(action,{httpMethod:req.method,headers:req.headers,body,readId:url.searchParams.get('read')});
       res.writeHead(result.statusCode,{...result.headers,'Cache-Control':'no-store'});res.end(result.body);
     }catch{res.writeHead(503,{'Content-Type':'application/json'});res.end(JSON.stringify({error:'Local preview storage is unavailable.'}));}
     return;

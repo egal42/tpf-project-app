@@ -112,3 +112,9 @@ test('Account comparison reference is stable by verified UID, differs by account
  f.users.alice.username='renamed';assert.equal(body(await f.history()).connection.accountReference,a.connection.accountReference);assert(!JSON.stringify(a.connection).includes('uid-alice'));assert(!JSON.stringify(a.connection).includes('secret-test-key'));
  const event={...f.event('alice'),deployContext:'production'};assert.equal(body(await f.service()('my-forest',event)).connection.recordEnvironment,'production');
 });
+
+test('Fresh history read marker is echoed only after authentication',async()=>{
+ const f=fixture();const event={...f.event(),readId:'fresh-read-123'};
+ assert.equal(body(await f.service()('my-forest',event)).readId,'fresh-read-123');
+ assert.equal(body(await f.service()('my-forest',{...event,headers:{}})).readId,undefined);
+});

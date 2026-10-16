@@ -1,4 +1,4 @@
-/* v0.9.5: same Pi SDK sandbox, scopes, payment payload and server endpoints as v0.9.1b. */
+/* v0.9.6: same Pi SDK sandbox, scopes, payment payload and server endpoints as v0.9.1b. */
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
@@ -115,10 +115,12 @@
     return id;
   }
   async function accountRequest(endpoint,body) {
-    const response = await fetch('/.netlify/functions/'+endpoint,{method:body ? 'POST' : 'GET',headers:{...(body ? {'Content-Type':'application/json'} : {}),Authorization:'Bearer '+currentAccessToken},...(body ? {body:JSON.stringify(body)} : {}),cache:'no-store',signal:AbortSignal.timeout(20000)});
+    const readId=body ? null : Array.from(crypto.getRandomValues(new Uint32Array(4)),n=>n.toString(16).padStart(8,'0')).join('');
+    const response = await fetch('/.netlify/functions/'+endpoint+(readId ? '?read='+encodeURIComponent(readId) : ''),{method:body ? 'POST' : 'GET',headers:{...(body ? {'Content-Type':'application/json'} : {}),Authorization:'Bearer '+currentAccessToken},...(body ? {body:JSON.stringify(body)} : {}),cache:'no-store',signal:AbortSignal.timeout(20000)});
     let data;
     try { data = await response.json(); } catch { throw new Error('Payment server returned an unreadable response.'); }
     if (!response.ok || data.error) throw new Error(data.error || 'Account records are temporarily unavailable. Please retry.');
+    if(readId && data.readId!==readId) throw new Error('A fresh account history response could not be confirmed. Please refresh account history.');
     return data;
   }
   async function completePayment(record) {
