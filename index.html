@@ -1,85 +1,236 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="theme-color" content="#03170d" />
-<meta name="color-scheme" content="dark" />
-<style>html,body{margin:0;background:#03170d;color:#f2efe6;}</style>
-<title>The Pioneer Forest Project</title>
-<link rel="manifest" href="manifest.json" />
-<link rel="stylesheet" href="assets/styles-091b.css" />
-<script src="https://sdk.minepi.com/pi-sdk.js"></script>
-<script src="assets/pi-init-091b.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#03170d" />
+  <meta name="color-scheme" content="dark" />
+  <title>The Pioneer Forest · Testnet</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="assets/tpf-logo.png" />
+  <link rel="stylesheet" href="assets/styles-092.css" />
+  <script async id="pi-sdk" src="https://sdk.minepi.com/pi-sdk.js"></script>
+  <script defer src="assets/pi-init-092.js"></script>
+  <script defer src="assets/impact-contract.js"></script>
+  <script defer src="assets/app-common-092.js"></script>
+  <script defer src="assets/app-092.js"></script>
 </head>
 <body>
-<main class="card">
-  <img class="tpf-logo" src="assets/tpf-logo.png" alt="The Pioneer Forest logo" />
-  <section id="screen-login">
-    <h1>The Pioneer Forest</h1>
-
-    <p class="subtitle">Pi-powered reforestation</p>
-
-    <p class="soft">
-      Transparent.<br />
-      Community-driven.<br />
-      Real-world impact.
-    </p>
-
-    <p>
-      <em>A forest grows through many small actions.<br />
-      Some plant trees. Some support.<br />
-      Some simply help the idea take root.</em>
-    </p>
-
-    <div class="notice">
-      Current Trail:<br />
-      <strong>First Roots 🌱</strong>
-    </div>
-
-    <p class="tiny">Testnet Preview • No real Pi donations</p>
-
-    <div id="browserWarning" class="warning hidden">
-      <strong>Pi Browser required.</strong><br />
-      This preview uses Pi Network login and Testnet payment features. Please open it inside Pi Browser to continue.<br /><br />
-      <a href="https://minepi.com/pi-browser/" target="_blank" rel="noopener">Download Pi Browser</a>
-    </div>
-
-    <div class="button-row">
-      <button class="primary" id="loginBtn">Continue with Pi Login</button>
-    </div>
-
-    <p id="status">Ready for Pi login.</p>
-  </section>
-  <section id="app-shell" class="hidden">
-    <h1>The Pioneer Forest</h1>
-    <p class="welcome-name" id="welcomeName">Welcome back, @Pioneer 🌱</p>
-    <p id="forestFact" class="forest-fact">🌳 Forests are living systems of roots, water, soil and time.</p>
-    <nav class="app-nav" aria-label="App navigation">
-      <button class="ghost nav-button active" data-screen-target="home">Home</button>
-      <button class="ghost nav-button" data-screen-target="support">Support</button>
-      <button class="ghost nav-button" data-screen-target="myforest">My Forest</button>
-      <button class="ghost nav-button" data-screen-target="more">More</button>
-    </nav>
-    <section class="app-screen active" data-screen="home">
-      <p>A calm Pi-powered forest journey where transparency, participation and real-world impact can grow step by step.</p>
-      <div class="danger">Testnet preview — no real Pi donation, no real tree planting, no CO₂ credit.</div>
-      <p class="tiny">Current Trail: <strong>First Roots 🌱</strong></p>
-      <section class="section"><h2>About</h2><p class="soft">The Pioneer Forest explores how Pi can support reforestation, transparent records and meaningful community participation.</p><p class="soft">This first Testnet version keeps things simple: Pi login, a support preview, and a small personal activity history.</p></section>
-      <div class="nav-grid"><button class="primary" data-screen-target="support">🌱 Support The Forest</button><button class="secondary" data-screen-target="myforest">My Forest</button><button class="ghost" data-screen-target="more">More Paths</button></div>
+  <div id="loading-screen" role="status" aria-live="polite"><img src="assets/tpf-logo.png" alt="" width="90" /><p>The Pioneer Forest</p><span>Taking root…</span></div>
+  <main class="card">
+    <header class="brand"><img class="tpf-logo" src="assets/tpf-logo.png" alt="The Pioneer Forest logo" width="80" height="80" /><div><p class="eyebrow">THE PIONEER FOREST</p><p class="tagline">Pi-powered reforestation.</p></div><span class="badge">TESTNET</span></header>
+    <section id="screen-login" class="hidden" aria-labelledby="welcome-title">
+      <p class="eyebrow intro-label">MANY SMALL ACTIONS. ONE GROWING FOREST.</p>
+      <h1 id="welcome-title">A forest grows<br />through people.</h1>
+      <p class="lead">Welcome to The Pioneer Forest. Explore the real project, follow its impact, and try the support journey with Test Pi.</p>
+      <section class="impact-panel" aria-label="Real TPF global impact">
+        <p class="eyebrow">REAL TPF GLOBAL IMPACT</p>
+        <div class="stats"><div><strong data-global-trees>—</strong><span>Trees planted</span></div><div><strong data-global-co2>—</strong><span>kg estimated CO₂ capture</span></div></div>
+        <p class="tiny" data-impact-status role="status">Loading the public TPF summary…</p>
+        <p class="tiny">From real planting records. CO₂ is estimated capture over time, not removal already achieved. Test Pi payments do not add to these totals.</p>
+        <button type="button" class="text-button" data-open-legal="transparency">Impact &amp; transparency</button>
+      </section>
+      <div class="testnet-note"><strong>A Testnet journey.</strong> No real Pi donation, tree planting or CO₂ credit is created by a test payment.</div>
+      <button class="primary full-width" id="loginBtn">Continue with Pi Login <span aria-hidden="true">→</span></button>
+      <p id="status" class="status" role="status" aria-live="polite">Pi login is required to enter.</p>
+      <div id="browserWarning" class="warning hidden">Open this app in Pi Browser or its configured Pi Sandbox to use Pi login and Testnet payments.</div>
     </section>
-    <section class="app-screen" data-screen="support">
-      <h2>Support The Forest</h2><p class="soft">Choose a Test Pi amount and walk through the future support flow.</p><div class="danger">Testnet only — no real Pi donation, no real tree planting, no CO₂ credit.</div>
-      <div class="support-panel"><h3>Choose amount</h3><div class="amount-grid"><button class="secondary amount-button active" data-amount="1">1 Test Pi</button><button class="secondary amount-button" data-amount="3">3 Test Pi</button><button class="secondary amount-button" data-amount="5">5 Test Pi</button></div><div class="input-wrap"><label for="customAmount">Or enter custom Test Pi amount</label><input id="customAmount" inputmode="decimal" placeholder="Example: 0.01" autocomplete="off" /><div class="char-row"><span>Leave empty to use the selected amount.</span><span id="selectedAmountLabel">Selected: 1 Test Pi</span></div></div><div class="button-row"><button class="primary test-button" id="sdkPaymentBtn">🌱 Send Test Pi<span>Testnet support preview</span></button></div><p id="appStatus">Choose an amount, then send Test Pi.</p></div>
-      <details><summary>Technical details</summary><p class="tiny">SDK payment notes are visible in the Pi Wallet screen, but Block Explorer shows a Pi-generated internal memo. This version does not rely on notes for attribution.</p><div class="test-log" id="testLog">Test log will appear here.</div></details>
+    <section id="app-shell" class="hidden" aria-label="Your TPF app">
+      <div class="session-row"><p id="welcomeName">Welcome, Pioneer.</p><button class="text-button" id="signOutBtn">Sign out</button></div>
+      <nav class="app-nav" aria-label="App sections">
+        <button class="nav-button active" data-screen-target="home" aria-current="page">Home</button>
+        <button class="nav-button" data-screen-target="support">Support</button>
+        <button class="nav-button" data-screen-target="myforest">My Forest</button>
+        <button class="nav-button" data-screen-target="about">About</button>
+      </nav>
+      <p class="testnet-strip">TESTNET · Test payments create no real-world planting impact.</p>
+      <section class="app-screen active" data-screen="home" aria-labelledby="home-title">
+        <p class="eyebrow">ROOTED IN TRANSPARENCY</p><h1 id="home-title" tabindex="-1">Small actions.<br />Growing together.</h1>
+        <p class="lead">The real forest grows through planting and public records. This app is where we test a simpler way to participate.</p>
+        <section class="impact-panel" aria-label="Real TPF global impact"><p class="eyebrow">REAL TPF GLOBAL IMPACT</p><div class="stats"><div><strong data-global-trees>—</strong><span>Trees planted</span></div><div><strong data-global-co2>—</strong><span>kg estimated CO₂ capture</span></div></div><p class="tiny" data-impact-status>Loading the public TPF summary…</p><p class="tiny">Estimated capture over time, not CO₂ already removed. These are global project totals, separate from your Testnet activity.</p><button type="button" class="text-button" data-open-legal="transparency">Impact &amp; transparency</button></section>
+        <div class="action-grid"><button class="primary" data-screen-target="support">Try Testnet support →</button><button class="secondary" data-screen-target="myforest">View My Forest</button></div>
+      </section>
+      <section class="app-screen" data-screen="support" aria-labelledby="support-title">
+        <p class="eyebrow">TRY THE SUPPORT JOURNEY</p><h1 id="support-title" tabindex="-1">Support the forest.</h1><p class="lead">Choose an amount to test the Pi payment flow.</p>
+        <div class="testnet-note"><strong>Test Pi only.</strong> This is a payment test, not a real donation or a purchase of trees or CO₂ credits.</div>
+        <div id="pendingNotice" class="warning hidden"><p id="pendingText">A previous payment needs confirmation.</p><button class="secondary" id="retryPaymentBtn">Retry payment confirmation</button></div>
+        <section class="support-panel" aria-label="Testnet amount">
+          <h2>Choose Test Pi amount</h2><div class="amount-grid"><button class="amount-button active" data-amount="1" aria-pressed="true">1 Test Pi</button><button class="amount-button" data-amount="3" aria-pressed="false">3 Test Pi</button><button class="amount-button" data-amount="5" aria-pressed="false">5 Test Pi</button></div>
+          <label for="customAmount">Or enter a custom Test Pi amount</label><input id="customAmount" type="text" inputmode="decimal" placeholder="For example, 0.01" autocomplete="off" aria-describedby="selectedAmountLabel" /><p class="tiny" id="selectedAmountLabel">Selected: 1 Test Pi</p>
+          <button class="primary full-width" id="sdkPaymentBtn">Send Test Pi <span aria-hidden="true">→</span></button><p id="appStatus" class="status" role="status" aria-live="polite">Choose an amount, then send Test Pi.</p>
+        </section>
+        <details><summary>Payment diagnostics</summary><p class="tiny">Pi Wallet handles confirmation. No wallet passphrase is requested here.</p><pre id="testLog">No payment activity in this session.</pre></details>
+      </section>
+      <section class="app-screen" data-screen="myforest" aria-labelledby="forest-title">
+        <p class="eyebrow">YOUR PERSONAL ACTIVITY</p><h1 id="forest-title" tabindex="-1">My Forest.</h1><p id="profileName" class="lead"></p>
+        <section class="impact-panel"><p class="eyebrow">YOUR CONFIRMED TESTNET ACCOUNT RECORDS</p><div class="stats personal-stats"><div><strong id="personalTotal">—</strong><span>Test Pi confirmed</span></div><div><strong id="personalCount">—</strong><span>Confirmed payments</span></div></div><p class="tiny" id="personalLatest">No completed payment recorded yet.</p></section>
+        <p class="testnet-note">Your Test Pi activity does not represent planted trees or CO₂ capture. Personal real-world planting records are not linked to this app.</p>
+        <h2>Payment history</h2><p class="tiny">Confirmed payments are saved to your Pi account record. Sign in on another device to see the same history. Clearing browser data does not delete these records.</p><p id="historyStatus" class="status" role="status" aria-live="polite"></p>
+        <div id="historyList" class="history-list"></div><button class="text-button" id="refreshHistoryBtn">Refresh account history</button><div id="legacyNotice" class="warning hidden"><p id="legacyText"></p><button class="secondary" id="restoreLegacyBtn">Verify older saved payments</button></div>
+      </section>
+      <section class="app-screen" data-screen="about" aria-labelledby="about-title">
+        <p class="eyebrow">THE IDEA BEHIND THE PIONEER FOREST</p><h1 id="about-title" tabindex="-1">Growing in the open.</h1><p class="lead">The Pioneer Forest connects Pi-powered support with reforestation and transparent public records.</p>
+        <section class="info-block"><h2>Real project. Testnet app.</h2><p>The website reports real trees planted and estimated CO₂ capture supported by planting records. This app uses Pi authentication and Testnet payments to test participation. Test payments never increase the real impact totals.</p></section>
+        <section class="info-block"><h2>Follow the records.</h2><p>View The Pioneer Forest’s impact and transparency information here, or follow the official Fireside channel for project updates and planting records.</p><ul class="link-list"><li><button type="button" class="text-button" data-open-legal="transparency">Impact &amp; transparency</button></li><li><a href="https://fireside.pinet.com/channels/ThePioneerForest">Official Fireside channel ↗</a></li></ul></section>
+        <p class="tiny">Pi login identifies your account. Confirmed Testnet payment identifiers, amounts and dates are saved securely for your account history, accessible across devices. Testnet records remain separate from real planting impact.</p>
+      </section>
     </section>
-    <section class="app-screen" data-screen="myforest"><h2>My Forest</h2><p class="welcome-name" id="profileName">Welcome, Pioneer 🌱</p><p class="soft">Your local Testnet activity in this browser.</p><section class="section"><div class="history-list" id="historyList"><div class="history-item">No local activity yet.</div></div><div class="button-row"><button class="ghost" id="clearHistoryBtn">Clear local history</button></div><p class="tiny">Later, real Mainnet history should be saved server-side with minimal data: username, payment ID, txid, amount, date and status.</p></section></section>
-    <section class="app-screen" data-screen="more"><h2>More Paths</h2><p class="soft">Future paths for music, public signals, impact records and updates.</p><section class="section"><div class="menu-shell"><div class="menu-grid"><div class="menu-card"><h3>Forest Music</h3><p class="tiny">Featured identity track: I Dreamed a Forest — Awakening.</p></div><div class="menu-card"><h3>Public Forest Signals</h3><p class="tiny">Future opt-in public supporter view. No ranking.</p></div><div class="menu-card"><h3>Impact Records</h3><p class="tiny">Later: real donations, planting records, CO₂ and certificates.</p></div><div class="menu-card"><h3>Project Updates</h3><p class="tiny">Later: Pi-native updates and Fireside transparency links.</p></div></div></div></section></section>
-    <button class="signout-button" id="signOutBtn">👤 Sign Out</button>
-  </section>
-  <p class="footer-note">Development preview — Testnet phase</p>
-</main>
-<script src="assets/app-common-091b.js"></script>
-<script src="assets/app-091b.js"></script>
+<!-- APP LEGAL START -->
+<section id="legal-screen" class="hidden" aria-label="Legal and transparency information"><button type="button" class="text-button" id="closeLegalBtn">← Back to the app</button><div class="legal-tabs" aria-label="Legal information"><button type="button" data-open-legal="privacy-policy">Privacy Policy</button><button type="button" data-open-legal="terms-of-service">Terms of Service</button><button type="button" data-open-legal="transparency">Transparency &amp; Scope</button></div><article class="legal-document hidden" data-legal-document="privacy-policy"><h1 tabindex="-1">Privacy Policy</h1><section aria-label="Effective date" class="intro"><p><strong>Last updated:</strong> 16 October 2026</p></section>
+<section aria-label="About this policy" class="intro"><h2>About this policy</h2><p>The Pioneer Forest (TPF) is an independent, community-driven environmental initiative within the Pi Network ecosystem, operated by egal42. This policy applies to the TPF website, associated applications, direct Pi contributions, environmental records and Partner Pools. Privacy enquiries: <span>egal42.pi@gmail.com</span>.</p></section>
+<section aria-label="Information handled" class="intro"><h2>Information handled</h2><p>Depending on the activity, TPF may handle authenticated Pi usernames; payment IDs, transaction IDs, wallet addresses, amounts, memos and statuses; contribution and allocation records; voluntary messages; and limited security and technical information. Pi sign-in does not ordinarily provide TPF with Pi KYC identity documents. TPF never requests wallet passphrases or private keys.</p></section>
+<section aria-label="Purposes and legal bases" class="intro"><h2>Purposes and legal bases</h2><p>Information is used to operate services, authenticate users, verify transactions, maintain environmental and participation records, answer enquiries, prevent abuse and comply with applicable obligations. Depending on the processing, the legal basis may be performance of an agreement (GDPR Art. 6(1)(b)), legitimate interests in secure and reliable operation (Art. 6(1)(f)), legal obligations (Art. 6(1)(c)), or consent for optional uses (Art. 6(1)(a)).</p></section>
+<section aria-label="In-app payments and direct transfers" class="intro"><h2>In-app payments and direct transfers</h2><p>For payments made through the TPF Pi app, payment records can be associated with the authenticated Pi username. The Developer Portal app currently uses Pi Testnet; separate direct wallet contributions already occur on Mainnet. A direct blockchain transfer does not itself establish a verified Pi username. TPF does not automatically publish a username together with a wallet address.</p></section>
+<section aria-label="Transparency and public records" class="intro"><h2>Transparency and public records</h2><p>TPF publishes environmental records and verification links, which may include transaction references, certificates and voluntarily provided attribution. Blockchain transactions are publicly visible independently of TPF. Public blockchain records cannot normally be erased by TPF. Public attribution or account-to-wallet disclosure beyond what is necessary for the service should be optional and clearly explained.</p></section>
+<section aria-label="Service providers and transfers" class="intro"><h2>Service providers and transfers</h2><p>Relevant third parties may include Pi Network, website and application hosting providers, blockchain infrastructure and environmental providers such as Tree-Nation. Their own terms and privacy practices may apply. Processing outside the European Economic Area may occur; applicable transfer safeguards must be assessed for the actual providers used.</p></section>
+<section aria-label="Storage and retention" class="intro"><h2>Storage and retention</h2><p>TPF aims to minimize production logs and retain information only for as long as necessary for its purpose, including applicable transaction and recordkeeping obligations. Temporary technical logs should be kept shorter than records required for payment verification or legal compliance. Browser storage may be used for session information and local activity history. Consent will be requested for non-essential cookies or similar technologies where required.</p></section>
+<section aria-label="Your rights" class="intro"><h2>Your rights</h2><p>Where the GDPR applies, you may request access, correction, deletion, restriction or portability of personal data, object to certain processing, and withdraw consent where processing relies on consent. Rights may be limited by applicable law and immutable blockchain records. You may complain to a competent data protection authority. Contact <span>egal42.pi@gmail.com</span>.</p></section>
+<section aria-label="Updates" class="intro"><h2>Updates</h2><p>This policy may be updated as TPF services develop. The latest version will appear on this page.</p></section></article><article class="legal-document hidden" data-legal-document="terms-of-service"><h1 tabindex="-1">Terms of Service</h1><section aria-label="Effective date" class="intro"><p><strong>Last updated:</strong> 16 October 2026</p></section>
+<section aria-label="About TPF" class="intro"><h2>About TPF</h2><p>The Pioneer Forest (TPF) is an independent, community-driven environmental initiative within the Pi Network ecosystem, operated by egal42. It is not affiliated with or endorsed by the Pi Core Team. Contact: <span>egal42.pi@gmail.com</span>.</p></section>
+<section aria-label="Participation and Pi Network" class="intro"><h2>Participation and Pi Network</h2><p>TPF services are primarily intended for Pi Network participants. Some functions require Pi authentication or a Pi Wallet. Pi Network manages its own account verification and KYC procedures; ordinary Pi authentication does not provide TPF with identity documents or necessarily confirm a user’s KYC status. Participants must comply with applicable law and platform rules.</p></section>
+<section aria-label="Wallet security" class="intro"><h2>Wallet security</h2><p><strong>TPF never asks for your Pi Wallet passphrase or private keys.</strong> Only enter your passphrase in the official Pi Wallet accessed through Pi Browser. Do not share it with anyone claiming to represent TPF.</p></section>
+<section aria-label="Contributions and payments" class="intro"><h2>Contributions and payments</h2><p>TPF already accepts direct Mainnet Pi wallet contributions. Its Developer Portal app currently uses Testnet for payment testing; Testnet Pi is not a real Mainnet contribution. If Mainnet in-app payments are introduced, the applicable purpose and amount should be shown before confirmation. Blockchain transfers may be irreversible at network level, but this does not remove applicable legal remedies or consumer rights.</p></section>
+<section aria-label="Environmental activity and transparency" class="intro"><h2>Environmental activity and transparency</h2><p>TPF supports tree planting, reforestation and related environmental projects through independent providers. Project availability, methodology and outcomes vary. Unless an offer expressly says otherwise, participation does not grant ownership of trees, land, carbon credits, financial returns or governance rights. See <button type="button" class="inline-link" data-open-legal="transparency">Transparency &amp; Scope</button> for the project’s public reporting approach.</p></section>
+<section aria-label="Partner Pools" class="intro"><h2>Partner Pools</h2><p>Partner Pools have specific environmental backing and allocation rules set out in the relevant pool information. Partners may allocate benefits to eligible participants according to those rules. Public pool records may describe backing, allocations and remaining balances.</p></section>
+<section aria-label="Digital products and other offers" class="intro"><h2>Digital products and other offers</h2><p>Where TPF offers a digital product or other paid item, the specific offer describes what is supplied, the price and relevant conditions. A purchase is distinct from a voluntary contribution. Applicable mandatory consumer information, cancellation rights and other statutory protections remain in effect.</p></section>
+<section aria-label="Errors, refunds and support" class="intro"><h2>Errors, refunds and support</h2><p>For failed, duplicate or incorrect transactions, contact <span>egal42.pi@gmail.com</span> with the relevant payment or transaction reference. Corrections, refunds and other remedies are handled according to the circumstances and applicable law.</p></section>
+<section aria-label="Public records and privacy" class="intro"><h2>Public records and privacy</h2><p>TPF may publish transaction references, environmental verification and optional contributor attribution. An authenticated Pi username is not automatically published together with a wallet address. Public blockchain information remains independently accessible. See the <button type="button" class="inline-link" data-open-legal="privacy-policy">Privacy Policy</button>.</p></section>
+<section aria-label="Availability and changes" class="intro"><h2>Availability and changes</h2><p>TPF services may change and may depend on external platforms and environmental providers. Continuous availability is not guaranteed. These Terms may be updated; material changes will be communicated where required. Nothing here limits liability or rights that cannot legally be excluded.</p></section></article><article class="legal-document hidden" data-legal-document="transparency"><h1 tabindex="-1">Transparency &amp; Scope</h1><section class="intro" aria-label="Overview">
+
+      <p>
+        The Pioneer Forest is a community-driven reforestation initiative
+        operating within the Pi Network ecosystem.
+      </p>
+
+      <p>
+        It is an independent project and is not affiliated with or endorsed by
+        the Pi Core Team.
+      </p>
+
+      <p>
+        TPF records contributions and planting, shares the proof, and keeps the history available.
+      </p>
+
+    </section>
+<section class="intro" aria-label="How impact is created">
+      <h2>How Impact Is Created</h2>
+
+      <p>
+        Pi contributions help fund tree planting through independent providers such as Tree-Nation.
+      </p>
+
+      <p>
+        TPF chooses planting based on available projects, species, costs and the purpose of each contribution or pool.
+      </p>
+
+      <p>
+        Tree-Nation supplies planting records and estimates of expected CO₂ capture. Those estimates describe capture over time; they do not mean that all the CO₂ has already been removed.
+      </p>
+    </section>
+<section class="intro" aria-label="Public rules and figures">
+      <h2>Public Rules &amp; Figures</h2>
+      <p>The current general minimum is <strong><span data-tpf-minimum>20</span> kg of estimated CO₂ capture per Pi contributed</strong>. Partner Pools are agreed individually through an offer; this minimum does not automatically apply to them. Products show their backing in the product details.</p>
+
+      <p><span>See the reviewed planting and CO₂ totals →</span> The website uses one published TPF summary, with a date showing how far the records have been checked.</p>
+      <p>Tree-Nation’s current CO₂ calculations cover up to ten years of growth. Actual capture happens gradually and depends on the trees and site conditions. TPF uses “CO₂ capture” for these estimates and “CO₂ backing” for the values assigned to pools and products. A reward record is not automatically a formal carbon credit.</p>
+      <p><span>Tree-Nation’s CO₂ methodology →</span></p>
+    </section>
+<section class="intro" aria-label="Documentation">
+      <h2>Documentation & Public Record</h2>
+
+      <p>
+        The Pioneer Forest maintains a public record of activity through
+        multiple channels:
+      </p>
+
+      <ul>
+        <li>The Impact page on this site</li>
+        <li>Updates on the Fireside #ThePioneerForest channel</li>
+        <li>External planting certificates where available</li>
+        <li>Public blockchain transaction records</li>
+      </ul>
+
+      <p>
+        These records let you follow a contribution and check the planting behind it. A planting certificate documents the planting and its stated CO₂ estimate; it does not by itself prove that capture is complete.
+      </p>
+    </section>
+<section class="intro" aria-label="Funding model">
+      <h2>Funding Model</h2>
+
+      <p>
+        The Pioneer Forest operates primarily through voluntary Pi
+        contributions.
+      </p>
+
+      <p>
+        Contributions are not investments and do not grant ownership,
+        financial returns, or decision-making rights.
+      </p>
+
+      <p>
+        Funds support planting and the work needed to keep TPF running.
+      </p>
+    </section>
+<section class="intro" aria-label="What the project does not provide">
+      <h2>What The Pioneer Forest Does Not Provide</h2>
+
+      <ul>
+        <li>No ownership of trees or land</li>
+        <li>No investment or financial product</li>
+        <li>No guaranteed returns</li>
+        <li>No legal claim over planted sites</li>
+      </ul>
+    </section>
+<section class="intro" aria-label="Independence">
+      <h2>Independence</h2>
+
+      <p>
+        TPF coordinates funding and keeps the records.
+      </p>
+
+      <p>
+        Planting providers plant and manage the forests and supply planting records.
+      </p>
+
+      <p>
+        TPF manages its website, accounting and public updates.
+      </p>
+    </section>
+<section class="intro" aria-label="Verification">
+      <h2>Verification</h2>
+
+      <p>
+        Pi transactions can be verified through the
+        <a href="https://blockexplorer.minepi.com/mainnet/">
+          Pi Block Explorer
+        </a>.
+      </p>
+
+      <p>
+        External planting activity can be reviewed through the
+        <span>
+          Tree-Nation profile
+        </span>.
+      </p>
+    </section>
+<section class="intro" aria-label="Contact">
+      <h2>Contact</h2>
+
+      <p>
+        The Pioneer Forest is operated by egal42.
+      </p>
+
+      <p>
+        You can contact egal42 through Pi Chats or the Fireside forum.
+      </p>
+
+      <p>
+        Replies may take a little time.
+      </p>
+    </section></article></section>
+<!-- APP LEGAL END -->
+    <footer><span>Go Pi. Go Green. Go The Pioneer Forest.</span><div><button type="button" class="text-button" data-open-legal="privacy-policy">Privacy Policy</button><span aria-hidden="true"> · </span><button type="button" class="text-button" data-open-legal="terms-of-service">Terms of Service</button></div><small>v0.9.3 · Testnet development preview</small></footer>
+    <noscript><p>JavaScript is required for Pi login and the app. </p></noscript>
+  </main>
 </body>
 </html>
