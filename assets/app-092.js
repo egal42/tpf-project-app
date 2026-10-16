@@ -1,11 +1,11 @@
-/* v0.9.3: same Pi SDK sandbox, scopes, payment payload and server endpoints as v0.9.1b. */
+/* v0.9.4: same Pi SDK sandbox, scopes, payment payload and server endpoints as v0.9.1b. */
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
   const screens = ['home','support','myforest','about'];
   const IMPACT_KEY = 'tpf_app_public_impact_v1', IMPACT_TTL = 6 * 60 * 60 * 1000;
   let currentUser = null, currentAccessToken = null, accountHistory = null, historyLoading = false, selectedAmount = 1, authenticating = false, paymentBusy = false, pendingPayment = null;
-  let retryBusy = false, historyError = null;
+  let retryBusy = false, historyError = null, lastHistoryRead = 0;
   const format = n => Number(n).toLocaleString(undefined,{maximumFractionDigits:3});
   const date = value => { const d = new Date(value); return Number.isFinite(d.getTime()) ? d.toLocaleString() : 'Date unavailable'; };
   const status = message => { $('status').textContent = message; };
@@ -23,7 +23,7 @@
       el.classList.toggle('active',active);
       if (active) el.setAttribute('aria-current','page'); else el.removeAttribute('aria-current');
     });
-    if (name === 'myforest') renderHistory();
+    if (name === 'myforest') {renderHistory();if(Date.now()-lastHistoryRead>60000)loadAccountHistory();}
     if (focus && !legalOrigin) document.querySelector('[data-screen="'+name+'"] h1').focus();
   }
   let legalOrigin=null;
@@ -87,7 +87,7 @@
       const verified = await accountRequest('my-forest');
       if (!verified.account?.uid || verified.account.uid !== auth.user.uid) throw new Error('The verified Pi account does not match the login session.');
       currentUser = verified.account;
-      accountHistory = verified;
+      accountHistory = verified;lastHistoryRead=Date.now();
       if(!pendingPayment && verified.pending?.length) pendingPayment=verified.pending[0];
       TPF.saveSession(currentUser.username);
       $('welcomeName').textContent = 'Welcome, @'+currentUser.username+'.';
@@ -184,7 +184,7 @@
       const data=await accountRequest('my-forest');
       if(token!==currentAccessToken)return;
       if(data.account?.uid!==currentUser.uid || data.network!=='Pi Testnet' || !Array.isArray(data.items) || !data.totals) throw new Error('Account history response could not be verified.');
-      accountHistory=data; if(!pendingPayment && data.pending?.length){pendingPayment=data.pending[0];showPending();} renderHistory();
+      accountHistory=data;lastHistoryRead=Date.now(); if(!pendingPayment && data.pending?.length){pendingPayment=data.pending[0];showPending();} renderHistory();
     } catch(error) {
       if(token===currentAccessToken){historyError=error.message;renderHistory();}
     } finally {historyLoading=false; $('refreshHistoryBtn').disabled=false;}
@@ -195,6 +195,7 @@
     const data=accountHistory;
     $('personalTotal').textContent=data ? data.totals.testPi : '—';
     $('personalCount').textContent=data ? String(data.totals.payments) : '—';
+    $('accountConnection').textContent='App '+document.querySelector('meta[name="tpf-version"]').content+' · @'+currentUser.username+' · Account '+(data?.connection?.accountReference || 'not available')+' · '+(data?.connection?.recordEnvironment || 'unknown environment')+' · Pi Testnet';
     const items=data?.items || [];
     $('personalLatest').textContent=items.length ? 'Latest confirmed payment: '+date(items[0].dateIso) : 'No confirmed payments recorded yet.';
     const escape=TPF.escapeHtml;

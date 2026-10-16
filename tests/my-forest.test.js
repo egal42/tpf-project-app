@@ -106,3 +106,9 @@ test('A cancelled recovery receipt does not prevent reading the rest of the acco
  const f=fixture();f.payment('cancel-later');f.failComplete();await f.complete('cancel-later');f.payments.get('cancel-later').status.cancelled=true;
  const r=await f.history();assert.equal(r.statusCode,200);assert.equal(body(r).totals.payments,0);assert.equal(body(r).pending.length,0);
 });
+
+test('Account comparison reference is stable by verified UID, differs by account and excludes raw UID/token',async()=>{
+ const f=fixture();const a=body(await f.history());const b=body(await f.history('bob'));assert.match(a.connection.accountReference,/^[a-f0-9]{12}$/);assert.notEqual(a.connection.accountReference,b.connection.accountReference);
+ f.users.alice.username='renamed';assert.equal(body(await f.history()).connection.accountReference,a.connection.accountReference);assert(!JSON.stringify(a.connection).includes('uid-alice'));assert(!JSON.stringify(a.connection).includes('secret-test-key'));
+ const event={...f.event('alice'),deployContext:'production'};assert.equal(body(await f.service()('my-forest',event)).connection.recordEnvironment,'production');
+});

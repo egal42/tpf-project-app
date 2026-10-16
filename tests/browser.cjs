@@ -32,7 +32,7 @@ async function pay(p,amount='0.1'){await section(p,'support');await p.locator('#
  await scenario('Pi login gate, server verification, SDK settings and four sections',async()=>{
   const p=await pageFor('gate');assert.equal(await p.locator('#app-shell').isVisible(),false);await login(p);assert.deepEqual(await p.evaluate(()=>__config),{version:'2.0',sandbox:true});assert.deepEqual(await p.evaluate(()=>__scopes),['username','payments']);assert.deepEqual(await p.locator('.nav-button').allTextContents(),['Home','Support','My Forest','About']);
   for(const name of ['support','myforest','about','home']){await section(p,name);assert(await p.locator('[data-screen="'+name+'"].active').isVisible());assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);}
-  assert.equal(await p.locator('#clearHistoryBtn').count(),0);assert.deepEqual(p.errors,[]);await p.context().close();
+  await section(p,'myforest');assert.match(await p.locator('#accountConnection').textContent(),/App 0\.9\.4.*Account [a-f0-9]{12}/);assert.equal(await p.locator('#clearHistoryBtn').count(),0);assert.deepEqual(p.errors,[]);await p.context().close();
  });
  await scenario('Rejected login or unavailable account service cannot bypass authenticated entry',async()=>{
   let p=await pageFor('rejected',{authError:true});await p.locator('#loginBtn').click();assert.equal(await p.locator('#app-shell').isVisible(),false);await p.context().close();
@@ -90,6 +90,11 @@ async function pay(p,amount='0.1'){await section(p,'support');await p.locator('#
  });
  await scenario('Legal information remains visible if Pi login completes while it is open',async()=>{
   const p=await pageFor('legal-login-race');await p.route('**/.netlify/functions/my-forest',async route=>{await new Promise(resolve=>setTimeout(resolve,500));await route.continue();});await p.locator('#loginBtn').click();await p.locator('footer [data-open-legal="privacy-policy"]').click();await p.waitForTimeout(800);assert(await p.locator('#legal-screen').isVisible());assert.equal(await p.locator('#app-shell').isVisible(),false);await p.locator('#closeLegalBtn').click();await p.locator('#app-shell:not(.hidden)').waitFor();assert(await p.locator('[data-screen="home"].active').isVisible());await p.context().close();
+ });
+ await scenario('Returning to My Forest refreshes another device’s payments without background polling',async()=>{
+  const first=await pageFor('cross-device');await login(first);await section(first,'myforest');assert.equal(await first.locator('#personalCount').innerText(),'0');await section(first,'home');
+  const second=await pageFor('cross-device');await login(second);await pay(second,'1');await second.context().close();
+  await first.evaluate(()=>{const oldNow=Date.now;Date.now=()=>oldNow()+61000;});await section(first,'myforest');await first.waitForFunction(()=>document.getElementById('personalCount').textContent==='1');assert.equal(await first.locator('#personalTotal').innerText(),'1');await first.context().close();
  });
  const p=await pageFor('preview-review');await p.screenshot({path:'tests/artifacts/welcome-mobile.png',fullPage:true});await login(p);
  for(const name of ['home','support','myforest','about']){await section(p,name);if(name==='myforest')await pay(p,'0.01');await p.evaluate(()=>scrollTo(0,0));await p.screenshot({path:'tests/artifacts/'+name+'-mobile.png',fullPage:true});}

@@ -8,3 +8,19 @@
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
+
+# Keep entry documents fresh in mobile WebViews. Public impact keeps its separate CDN cache.
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "no-store, max-age=0"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-store, max-age=0"
+
+[[headers]]
+  for = "/index"
+  [headers.values]
+    Cache-Control = "no-store, max-age=0"
