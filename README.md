@@ -1,6 +1,6 @@
-# The Pioneer Forest Pi Testnet app — v0.9.4
+# The Pioneer Forest Pi Testnet app — v0.9.5
 
-Based on v0.9.1b (`d3db6d5`). Deployment of v0.9.4 approved on 16 October 2026. Local validation is complete; genuine Pi/hosted storage smoke checks follow deployment.
+Based on v0.9.1b (`d3db6d5`). Deployment of v0.9.5 approved on 16 October 2026. Local validation is complete; genuine Pi/hosted storage smoke checks follow deployment.
 
 ## Local preview
 
@@ -51,15 +51,17 @@ Each confirmed payment uses two small objects (receipt and final record). Reads 
 
 ## Release checks and limits
 
-- Future deployments require explicit approval. This v0.9.4 deployment was approved on 16 October 2026.
+- Future deployments require explicit approval. This v0.9.5 deployment was approved on 16 October 2026.
 - Local tests use simulated Pi responses and disk storage. A genuine Pi Browser login, small Test Pi payment, Blobs write/read, retry and second-device login remain hosted smoke checks after an approved deployment.
 - Existing older completed payments cannot be discovered from Pi’s documented U2A API without payment identifiers. Legacy recovery is user-requested, verified and limited to available IDs.
 - Pi may assign a new app-specific UID after the user revokes and re-grants app permissions. Old records remain retained under the former identity; do not automatically reassociate by username. This requires a separate verified recovery process if it occurs.
 - Persistent hosting is not a substitute for backups. No automatic export/backup schedule has been added. Normal redeploys preserve the ledger; deletion of the Netlify project/store would require recovery from backups.
 - The main TPF website, Operations Center, Pi Developer Portal, validation key, manifest, logo and SDK initialization are untouched.
 
-## v0.9.4 mobile diagnosis
+## v0.9.5 mobile diagnosis
 
 Entry HTML uses `no-store` response headers and script/style URLs contain content fingerprints. This prevents reuse after a client fetches the updated entry document; it cannot forcibly evict an old document already retained by Pi Browser or fix an unknown alternate launch URL. No browser history, tokens, or account records are cleared.
 
 My Forest has a collapsed Connection details section containing the current app version, verified username, a short hash of the Pi UID, and the actual record environment. It excludes access tokens and raw account IDs. This allows comparison of direct mobile/emulator/Sandbox sessions without guessing or combining records by username. The phone’s zero-history cause remains unconfirmed until those sessions can be compared.
+
+Legacy payment verification shows per-record progress and retains the server failure reasons beside the verification button. Original browser records are preserved.

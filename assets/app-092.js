@@ -1,11 +1,11 @@
-/* v0.9.4: same Pi SDK sandbox, scopes, payment payload and server endpoints as v0.9.1b. */
+/* v0.9.5: same Pi SDK sandbox, scopes, payment payload and server endpoints as v0.9.1b. */
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
   const screens = ['home','support','myforest','about'];
   const IMPACT_KEY = 'tpf_app_public_impact_v1', IMPACT_TTL = 6 * 60 * 60 * 1000;
   let currentUser = null, currentAccessToken = null, accountHistory = null, historyLoading = false, selectedAmount = 1, authenticating = false, paymentBusy = false, pendingPayment = null;
-  let retryBusy = false, historyError = null, lastHistoryRead = 0;
+  let retryBusy = false, historyError = null, lastHistoryRead = 0, legacyBusy = false;
   const format = n => Number(n).toLocaleString(undefined,{maximumFractionDigits:3});
   const date = value => { const d = new Date(value); return Number.isFinite(d.getTime()) ? d.toLocaleString() : 'Date unavailable'; };
   const status = message => { $('status').textContent = message; };
@@ -204,22 +204,42 @@
     const legacy=TPF.loadHistory(currentUser.username);
     const ids=new Set(items.map(item=>item.paymentId));
     const remaining=legacy.filter(item=>!item.paymentId || !ids.has(item.paymentId));
-    $('legacyNotice').classList.toggle('hidden',!remaining.length);
+    $('legacyNotice').classList.toggle('hidden',!remaining.length && !$('legacyResult').textContent);
     $('legacyText').textContent=remaining.length+' older browser records are not yet verified in your account history. Only payments verified by Pi can be added.';
   }
   async function restoreLegacy() {
-    if(!currentUser || historyLoading)return;
-    $('restoreLegacyBtn').disabled=true;
-    let restored=0,unverified=0;
+    if(!currentUser || historyLoading || legacyBusy)return;
+    const token=currentAccessToken;
+    legacyBusy=true;
+    const button=$('restoreLegacyBtn'), output=$('legacyResult');
+    button.disabled=true;
+    let restored=0,unverified=0,checked=0;
+    const reasons=new Map();
+    const failed=reason=>{unverified++;reasons.set(reason,(reasons.get(reason)||0)+1);};
     const ids=new Set((accountHistory?.items || []).map(item=>item.paymentId));
     const legacy=TPF.loadHistory(currentUser.username).filter(item=>!item.paymentId || !ids.has(item.paymentId));
-    for(const item of legacy) {
-      if(!item.paymentId || !item.txid){unverified++;continue;}
-      try {const result=await accountRequest('complete-payment',{paymentId:item.paymentId,txid:item.txid});if(result.accountRecordSaved)restored++;else unverified++;} catch {unverified++;}
+    try {
+      for(const item of legacy) {
+        if(token!==currentAccessToken)return;
+        output.textContent='Checking older payment '+(++checked)+' of '+legacy.length+'…';
+        button.textContent='Checking '+checked+' of '+legacy.length+'…';
+        if(!item.paymentId || !item.txid){failed('The browser record is missing its payment or transaction ID.');continue;}
+        try {
+          const result=await accountRequest('complete-payment',{paymentId:item.paymentId,txid:item.txid});
+          if(token!==currentAccessToken)return;
+          if(result.accountRecordSaved)restored++;
+          else failed('The server did not confirm that the account record was saved.');
+        } catch(error) {failed(error.message || 'The verification request failed.');}
+      }
+      if(token!==currentAccessToken)return;
+      await loadAccountHistory();
+      if(token!==currentAccessToken)return;
+      output.textContent=restored+' older payments verified and saved. '+unverified+' could not be verified. '+[...reasons].map(([reason,count])=>count+' × '+reason).join(' ')+' Original browser records are preserved.';
+      $('legacyNotice').classList.remove('hidden');
+    } finally {
+      legacyBusy=false;button.disabled=false;button.textContent='Verify older saved payments';
+      if(token!==currentAccessToken)output.textContent='';
     }
-    await loadAccountHistory();
-    $('legacyText').textContent=restored+' older payments verified and saved. '+unverified+' could not be verified; the original browser records are preserved.';
-    $('legacyNotice').classList.remove('hidden'); $('restoreLegacyBtn').disabled=false;
   }
   function renderImpact(data,kind) {
     const impact = data?.impact;
@@ -253,7 +273,7 @@
       if (paymentBusy || retryBusy) return;
       currentUser = null; currentAccessToken = null; accountHistory = null; historyError = null; pendingPayment = null; TPF.clearSession();
       $('app-shell').classList.add('hidden'); $('screen-login').classList.remove('hidden');
-      $('historyList').replaceChildren(); showPending(); status('Signed out. Pi login is required to enter.'); $('loginBtn').focus();
+      $('historyList').replaceChildren(); $('legacyResult').textContent=''; showPending(); status('Signed out. Pi login is required to enter.'); $('loginBtn').focus();
     });
     document.querySelectorAll('[data-screen-target]').forEach(el => el.addEventListener('click',() => showScreen(el.dataset.screenTarget)));
     document.querySelectorAll('.amount-button').forEach(el => el.addEventListener('click',() => {
