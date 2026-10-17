@@ -1,4 +1,4 @@
-/* v0.9.8: add wallet-address consent for A2U; preserve SDK sandbox and support payments. */
+/* v0.9.9: add wallet-address consent for A2U; preserve SDK sandbox and support payments. */
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);

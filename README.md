@@ -1,6 +1,6 @@
-# The Pioneer Forest Pi Testnet app — v0.9.8 (local candidate)
+# The Pioneer Forest Pi Testnet app — v0.9.9 (local candidate)
 
-Built on the working v0.9.6 app. v0.9.8 adds the Testnet Welcome Reward and has not been deployed. Deployment requires explicit approval.
+Built on the working v0.9.6 app. v0.9.9 adds the Testnet Welcome Reward and has not been deployed. Deployment requires explicit approval.
 
 ## Local preview
 
@@ -12,7 +12,7 @@ The preview simulates Pi login and Pi’s API. It runs the actual account/paymen
 
 ## Persistent My Forest
 
-- SDK setup remains `version: 2.0`, `sandbox: true`, with `username`, `payments` and `wallet_address` scopes (wallet consent added for A2U in v0.9.8). Existing memo, payment metadata and endpoint URLs are retained.
+- SDK setup remains `version: 2.0`, `sandbox: true`, with `username`, `payments` and `wallet_address` scopes (wallet consent added for A2U in v0.9.9). Existing memo, payment metadata and endpoint URLs are retained.
 - The server validates the Bearer access token using Pi `/me` on every account/payment request. Tokens stay in frontend memory and are not logged or persisted.
 - Account keys use the **verified app-specific Pi UID**, not an editable username. A normal username change does not detach the history.
 - Before approval/completion the server reads Pi’s payment DTO and checks ownership, `Pi Testnet`, `user_to_app`, cancellation, amount and transaction match. Client-supplied username/amount never determine the record.
@@ -69,7 +69,7 @@ Legacy payment verification shows per-record progress and retains the server fai
 Authenticated history reads use a unique request marker echoed by the server. A response for a previous read is rejected rather than displayed as current account totals. This adds no polling.
 
 
-## Testnet Welcome Reward (v0.9.8 candidate)
+## Testnet Welcome Reward (v0.9.9 candidate)
 
 0.2 Test Pi per verified Pioneer, claimed explicitly after Pi login, initially capped at 20 successful claims (4 Test Pi total, plus blockchain fees and the app wallet’s required reserve). Home contains Claim/Check controls; My Forest shows the received reward separately. Existing user-to-app history, contribution totals and real-world impact are unchanged. No purchase or support payment is required to claim.
 

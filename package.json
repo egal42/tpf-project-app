@@ -1,6 +1,6 @@
 {
   "name": "tpf-project-app",
-  "version": "0.9.8",
+  "version": "0.9.9",
   "private": true,
   "scripts": {
     "start": "node scripts/local-server.js",

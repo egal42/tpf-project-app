@@ -32,7 +32,7 @@ async function pay(p,amount='0.1'){await section(p,'support');await p.locator('#
  await scenario('Pi login gate, server verification, SDK settings and four sections',async()=>{
   const p=await pageFor('gate');assert.equal(await p.locator('#app-shell').isVisible(),false);await login(p);assert.deepEqual(await p.evaluate(()=>__config),{version:'2.0',sandbox:true});assert.deepEqual(await p.evaluate(()=>__scopes),['username','payments','wallet_address']);assert.deepEqual(await p.locator('.nav-button').allTextContents(),['Home','Support','My Forest','About']);
   for(const name of ['support','myforest','about','home']){await section(p,name);assert(await p.locator('[data-screen="'+name+'"].active').isVisible());assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);}
-  await section(p,'myforest');assert.match(await p.locator('#accountConnection').textContent(),/App 0\.9\.8.*Account [a-f0-9]{12}/);assert.equal(await p.locator('#clearHistoryBtn').count(),0);assert.deepEqual(p.errors,[]);await p.context().close();
+  await section(p,'myforest');assert.match(await p.locator('#accountConnection').textContent(),/App 0\.9\.9.*Account [a-f0-9]{12}/);assert.equal(await p.locator('#clearHistoryBtn').count(),0);assert.deepEqual(p.errors,[]);await p.context().close();
  });
  await scenario('Rejected login or unavailable account service cannot bypass authenticated entry',async()=>{
   let p=await pageFor('rejected',{authError:true});await p.locator('#loginBtn').click();assert.equal(await p.locator('#app-shell').isVisible(),false);await p.context().close();

@@ -1,4 +1,4 @@
-# TPF Testnet Welcome Reward — v0.9.8 local recovery candidate
+# TPF Testnet Welcome Reward — v0.9.9 local recovery candidate
 
 Status: implemented and tested locally; NOT deployed. Existing live v0.9.6 is unchanged.
 
@@ -31,7 +31,7 @@ The bounded campaign journal lives at `welcome/campaign-v1` in the existing cont
 
 Phases: reserved → creating → created → building → signed → completed.
 
-- Reservation and `creating` are durable before Pi payment creation. If its response is lost, retries query Pi's incomplete A2U payments and match exact campaign/claim metadata. v0.9.8 permits one explicit recovery create only when the claim has no payment ID or signed XDR, has remained in creating for at least 120 seconds, and Pi returns no incomplete payments at all. The same claim ID and audit record are retained. Atomic create-owner fencing prevents late responses from selecting another payment or reaching signing. Known API rejections retain a retryable reserved claim and a whitelisted rejection code.
+- Reservation and `creating` are durable before Pi payment creation. If its response is lost, retries query Pi's incomplete A2U payments and match exact campaign/claim metadata. v0.9.9 permits one explicit recovery create only when the claim has no payment ID or signed XDR, has remained in creating for at least 120 seconds, and Pi returns no incomplete payments at all. The same claim ID and audit record are retained. Atomic create-owner fencing prevents late responses from selecting another payment or reaching signing. Known API rejections retain a retryable reserved claim and a whitelisted rejection code.
 - The payment ID is durable before signing. Signing uses a fenced owner token: an interrupted signer cannot later overwrite another instance's signed transaction.
 - Signed transaction bytes/hash are durable before broadcast. Retries look up the hash and, if needed and still valid, broadcast the **same bytes**. Blockchain sequence/hash rules prevent a second payment from that replay.
 - If broadcast/completion succeeds but a response or final record write is lost, Check reward reconciles the same hash/payment and finalizes the existing claim.
@@ -81,8 +81,16 @@ Local success is not a substitute for the first genuine Pi/Netlify A2U test. The
 - `npm audit --omit=dev --audit-level=high`: 0 known vulnerabilities.
 - Pi SDK initialization, original U2A server handlers, validation key, logo, manifest and embedded approved legal text were preserved. Login adds wallet_address consent for A2U. The server verifies this scope before reserving or recovering a claim.
 
-## v0.9.8 investigation
+## v0.9.9 investigation
 
 Observed production claim: creating, no paymentId, no signed transaction; Pi lookup returns zero matches. Original create error was not retained, so its cause is not proven. Code inspection found login omitted wallet_address. Official SDK reference documents that scope and advanced A2U docs require recipient wallet-sharing consent. Fix requests consent, preflights server-verified scopes, preserves recognized rejection codes without bodies/secrets, and adds bounded recovery without deleting claim history. No claim is reset by deployment or GET.
 
 Sources: https://github.com/pi-apps/pi-platform-docs/blob/master/SDK_reference.md ; https://github.com/pi-apps/pi-platform-docs/blob/master/payments_advanced.md ; https://github.com/pi-apps/pi-nodejs/blob/main/src/index.ts ; https://github.com/pi-apps/pi-nodejs/blob/main/src/types/errors.ts
+
+## v0.9.9 hash fix and signed-claim migration
+
+Production screenshot revealed signed.txid was a comma-separated byte list. Stellar SDK 17 returns Uint8Array for hash(); toString('hex') does not hex-encode that type. All transport hash conversion now explicitly uses Buffer.from(hash).toString('hex'). Tests require 64 lowercase hexadecimal characters, independently of mock hash generation.
+
+repair validates the stored envelope's sender, recipient, amount, memo, signature and time bounds. A legacy byte-list ID must exactly equal the envelope hash bytes before canonicalization. An unexpired envelope keeps identical bytes. If expired, only this legacy migration may renew once, on explicit POST, for the same Pi payment ID. It requires a closed ledger past the old expiry, fully indexed through Core's latest ledger, and an original canonical hash lookup returning 404 after that proof. Existing successful original transactions are reconciled without renewal; linked, failed or uncertain outcomes pause. Both original signed data and replacement are journaled atomically before submission. Ordinary expired transactions remain paused. No claim/payment record is deleted, and the campaign cap is unchanged.
+
+Horizon errors expose only a fixed allowlist of result codes; no raw response, envelope or secret is returned. Existing support payment handlers and account ledger are unchanged. Tests cover legacy migration, expiry/indexing/lookup failures, no renewal of confirmed originals, one-time renewal and journal-write failure before submission.

@@ -132,3 +132,8 @@ test('A late old create response cannot replace the selected recovered payment o
  const service=f.service({now:()=>new Date(Date.now()+180000).toISOString()});assert.equal(body(await service(f.event())).state,'claimed');const selected=f.data.claims[0].paymentId;
  release();await first;assert.equal(f.data.claims[0].paymentId,selected);assert.equal(f.calls.broadcast,1);assert.equal(f.calls.build,1);
 });
+test('Signed repair is persisted with its original envelope before submission; failed repair writes prevent payout',async()=>{
+ const f=fixture(),settle=f.transport.settle;f.transport.settle=async()=>{throw Error('submission blocked');};await f.run();assert.equal(f.data.claims[0].phase,'signed');const old=f.data.claims[0].signed;
+ f.transport.repair=async s=>({...s,xdr:'repaired-'+s.xdr,txid:'repaired-'+s.txid});f.transport.settle=settle;f.fail('signed');await f.run();assert.equal(f.calls.broadcast,0);assert.deepEqual(f.data.claims[0].signed,old);
+ f.fail(null);assert.equal(body(await f.run()).state,'claimed');assert.deepEqual(f.data.claims[0].signedHistory,[old]);assert.equal(f.calls.broadcast,1);assert.equal(f.calls.create,1);
+});
