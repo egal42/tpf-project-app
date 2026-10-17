@@ -248,7 +248,7 @@
   function renderWelcomeReward(){
     const state=rewardData?.state;
     const messages={eligible:'Welcome reward available: 0.2 Test Pi, once per Pioneer. '+(rewardData ? rewardData.successfulClaims+' of 20 claimed.' : ''),claimed:'Your 0.2 Test Pi welcome reward is confirmed.',pending:'Your welcome reward is pending. Check the same claim to continue safely.',exhausted:'All 20 welcome rewards have been claimed.',disabled:'The Testnet welcome reward is not enabled yet.',busy:'Another welcome reward is being confirmed. Please check again later.',identity_review:'A welcome claim exists for this Pi username. Account identity needs review.'};
-    const text=rewardError || messages[state] || 'Checking welcome reward availability…';
+    const text=rewardError || (rewardData?.statusDetail ? messages[state]+' '+rewardData.statusDetail : messages[state]) || 'Checking welcome reward availability…';
     $('welcomeRewardStatus').textContent=text;$('forestRewardStatus').textContent=text;
     const button=$('claimWelcomeRewardBtn');
     button.textContent=rewardBusy?'Confirming reward…':state==='pending'?'Check reward':state==='claimed'?'Reward received':'Claim 0.2 Test Pi';

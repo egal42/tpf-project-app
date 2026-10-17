@@ -95,3 +95,10 @@ test('Configuration diagnostics do not expose invalid seed values',async()=>{
  const f=fixture(),service=f.service({getTransport:async()=>{throw Error('invalid SECRET-SEED');}});
  const r=await service(f.event());assert.equal(body(r).diagnostic.stage,'wallet-configuration');assert(!r.body.includes('SECRET'));assert.equal(f.data,null);
 });
+test('Status diagnoses stuck creation against Pi without creating, signing, broadcasting or changing records',async()=>{
+ const f=fixture();f.lostCreate();await f.run();const before=f.data,calls=clone(f.calls);
+ const found=body(await f.run('alice','GET'));assert.match(found.statusDetail,/Pi payment found/);assert.deepEqual(f.calls,calls);assert.deepEqual(f.data,before);
+ f.payments.clear();assert.match(body(await f.run('alice','GET')).statusDetail,/no matching incomplete payment/);assert.deepEqual(f.data,before);
+ f.transport.incomplete=async()=>{throw Object.assign(Error('private error body'),{httpStatus:403});};
+ const failed=await f.run('alice','GET');assert.deepEqual(body(failed).diagnostic,{stage:'pi-incomplete',httpStatus:403});assert(!failed.body.includes('private error body'));assert.deepEqual(f.data,before);assert.deepEqual(f.calls,calls);
+});
