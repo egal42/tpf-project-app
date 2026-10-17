@@ -12,7 +12,7 @@ async function start(){server=spawn(process.execPath,['scripts/local-server.js',
 async function stop(){await new Promise(resolve=>{server.once('exit',resolve);server.kill();});}
 process.on('exit',()=>{server?.kill();});
 async function scenario(name,fn){await fn();result.push(name);console.log('PASS '+name);}
-async function pageFor(username,{authError=false,impactError=false}={}){
+async function pageFor(username,{authError=false,impactError=false,updateVersion=null,entryUrl='http://127.0.0.1:4173/'}={}){
  const context=await browser.newContext({viewport:{width:390,height:844}});
  await context.addInitScript(name=>{window.__previewUsername=name;},username);
  const p=await context.newPage();p.errors=[];p.on('pageerror',e=>p.errors.push(e.message));
@@ -22,7 +22,8 @@ async function pageFor(username,{authError=false,impactError=false}={}){
  const realPayment=Pi.createPayment;Pi.createPayment=(data,cb)=>{window.__paymentCalls=(window.__paymentCalls||0)+1;window.__callbacks=cb;return realPayment(data,{...cb,onReadyForServerCompletion:async(id,tx)=>{window.__id=id;window.__tx=tx;return cb.onReadyForServerCompletion(id,tx);}});};`;
  await p.route('**/__preview/sdk.js',r=>r.fulfill({body:sdk,contentType:'text/javascript'}));
  await p.route('**/.netlify/functions/impact-summary',r=>r.fulfill({status:impactError?503:200,json:impactError?{error:'Unavailable'}:impact}));
- await p.goto('http://127.0.0.1:4173/');await p.locator('#screen-login:not(.hidden)').waitFor();return p;
+ if(updateVersion!==null)await p.route('**/app-version.json*',r=>r.fulfill({json:{schema:'tpf_app_version_v1',version:updateVersion}}));
+ await p.goto(entryUrl);await p.locator('#screen-login:not(.hidden)').waitFor();return p;
 }
 async function login(p){await p.locator('#loginBtn').click();await p.locator('#app-shell:not(.hidden)').waitFor();}
 async function section(p,name){await p.locator('.nav-button[data-screen-target="'+name+'"]').click();}
@@ -32,7 +33,7 @@ async function pay(p,amount='0.1'){await section(p,'support');await p.locator('#
  await scenario('Pi login gate, server verification, SDK settings and four sections',async()=>{
   const p=await pageFor('gate');assert.equal(await p.locator('#app-shell').isVisible(),false);await login(p);assert.deepEqual(await p.evaluate(()=>__config),{version:'2.0',sandbox:true});assert.deepEqual(await p.evaluate(()=>__scopes),['username','payments','wallet_address']);assert.deepEqual(await p.locator('.nav-button').allTextContents(),['Home','Support','My Forest','About']);
   for(const name of ['support','myforest','about','home']){await section(p,name);assert(await p.locator('[data-screen="'+name+'"].active').isVisible());assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);}
-  await section(p,'myforest');assert.match(await p.locator('#accountConnection').textContent(),/App 0\.9\.10.*Account [a-f0-9]{12}/);assert.equal(await p.locator('#clearHistoryBtn').count(),0);assert.deepEqual(p.errors,[]);await p.context().close();
+  await section(p,'myforest');assert.match(await p.locator('#accountConnection').textContent(),/App 0\.9\.11.*Account [a-f0-9]{12}/);assert.equal(await p.locator('#clearHistoryBtn').count(),0);assert.deepEqual(p.errors,[]);await p.context().close();
  });
  await scenario('Rejected login or unavailable account service cannot bypass authenticated entry',async()=>{
   let p=await pageFor('rejected',{authError:true});await p.locator('#loginBtn').click();assert.equal(await p.locator('#app-shell').isVisible(),false);await p.context().close();
@@ -135,6 +136,26 @@ async function pay(p,amount='0.1'){await section(p,'support');await p.locator('#
  await scenario('A slow reward status read does not block support or sign-out and cannot leak across accounts',async()=>{
   const p=await pageFor('reward-slow');let release;const held=new Promise(r=>release=r);
   await p.route('**/.netlify/functions/welcome-reward*',async r=>{await held;try{await r.continue();}catch{}});await login(p);await section(p,'support');assert(await p.locator('#sdkPaymentBtn').isEnabled());assert(await p.locator('#signOutBtn').isEnabled());await p.locator('#signOutBtn').click();release();await p.waitForTimeout(100);assert.equal(await p.locator('#app-shell').isVisible(),false);assert.equal(await p.locator('#forestRewardRecord').innerText(),'');await p.context().close();
+ });
+ await scenario('Static update notice builds the version URL, protects actions and never auto-reloads',async()=>{
+  const p=await pageFor('update',{updateVersion:'0.9.12'});await p.locator('#updateNotice:not(.hidden)').waitFor();
+  assert.match(await p.locator('#updateMessage').innerText(),/0.9.12/);assert.equal(new URL(p.url()).searchParams.get('v'),null);
+  await login(p);await section(p,'support');await p.evaluate(()=>{Pi.createPayment=()=>{};});await p.locator('#sdkPaymentBtn').click();assert(await p.locator('#reloadAppBtn').isDisabled());
+  await p.evaluate(()=>document.getElementById('reloadAppBtn').click());assert.equal(new URL(p.url()).searchParams.get('v'),null);
+  await p.context().close();
+  const q=await pageFor('update-link',{updateVersion:'0.9.12'});await q.locator('#updateNotice:not(.hidden)').waitFor();
+  await q.locator('#reloadAppBtn').click();await q.waitForURL(u=>u.searchParams.get('v')==='0.9.12');assert.equal(new URL(q.url()).pathname,'/index.html');assert(new URL(q.url()).searchParams.get('reload'));
+  await q.locator('#updateNotice:not(.hidden)').waitFor();assert.match(await q.locator('#updateMessage').innerText(),/older copy/);assert(await q.locator('#reloadAppBtn').isHidden());await q.context().close();
+ });
+ await scenario('Update checks are throttled and compare numeric versions, not version strings',async()=>{
+  const p=await pageFor('version-current',{updateVersion:'0.9.9'});await login(p);assert(await p.locator('#updateNotice').isHidden());
+  let checks=0;await p.route('**/app-version.json*',r=>{checks++;return r.fulfill({json:{schema:'tpf_app_version_v1',version:'0.10.0'}});});
+  await p.evaluate(()=>{window.dispatchEvent(new Event('focus'));document.dispatchEvent(new Event('visibilitychange'));});await p.waitForTimeout(100);assert.equal(checks,0);
+  await p.evaluate(()=>{const now=Date.now;Date.now=()=>now()+3600001;window.dispatchEvent(new Event('focus'));});await p.locator('#updateNotice:not(.hidden)').waitFor();assert.equal(checks,1);assert.match(await p.locator('#updateMessage').innerText(),/0.10.0/);await p.context().close();
+ });
+ await scenario('Invalid or unavailable version files do not interrupt the app',async()=>{
+  const p=await pageFor('version-invalid',{updateVersion:'https://untrusted.example/'});await login(p);assert(await p.locator('#updateNotice').isHidden());
+  await p.route('**/app-version.json*',r=>r.abort());await p.evaluate(()=>{const now=Date.now;Date.now=()=>now()+3600001;window.dispatchEvent(new Event('focus'));});await section(p,'myforest');assert(await p.locator('#personalTotal').isVisible());assert.deepEqual(p.errors,[]);await p.context().close();
  });
  const p=await pageFor('preview-review');await p.screenshot({path:'tests/artifacts/welcome-mobile.png',fullPage:true});await login(p);
  for(const name of ['home','support','myforest','about']){await section(p,name);if(name==='myforest')await pay(p,'0.01');await p.evaluate(()=>scrollTo(0,0));await p.screenshot({path:'tests/artifacts/'+name+'-mobile.png',fullPage:true});}

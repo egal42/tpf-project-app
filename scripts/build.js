@@ -13,4 +13,7 @@ const html=fs.readFileSync(index,'utf8').replace(/(src|href)="(assets\/[^"?]+\.(
   return attribute+'="'+file+'?v='+version+'"';
 });
 fs.writeFileSync(index,html);
+const version=require('../package.json').version;
+if(!html.includes('name="tpf-version" content="'+version+'"'))throw Error('App and package versions differ');
+fs.writeFileSync(path.join(dist,'app-version.json'),JSON.stringify({schema:'tpf_app_version_v1',version}));
 console.log('Static app prepared in dist/. Netlify packages functions separately.');

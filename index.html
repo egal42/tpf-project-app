@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#03170d" />
   <meta name="color-scheme" content="dark" />
-  <meta name="tpf-version" content="0.9.10" />
+  <meta name="tpf-version" content="0.9.11" />
   <title>The Pioneer Forest · Testnet</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="assets/tpf-logo.png" />
@@ -15,10 +15,12 @@
   <script defer src="assets/impact-contract.js"></script>
   <script defer src="assets/app-common-092.js"></script>
   <script defer src="assets/app-092.js"></script>
+  <script defer src="assets/app-updates.js"></script>
 </head>
 <body>
   <div id="loading-screen" role="status" aria-live="polite"><img src="assets/tpf-logo.png" alt="" width="90" /><p>The Pioneer Forest</p><span>Opening the app…</span></div>
   <main class="card">
+    <aside id="updateNotice" class="warning hidden" role="status" aria-live="polite"><p id="updateMessage"></p><button id="reloadAppBtn" class="secondary">Reload app</button></aside>
     <header class="brand"><img class="tpf-logo" src="assets/tpf-logo.png" alt="The Pioneer Forest logo" width="80" height="80" /><div><p class="eyebrow">THE PIONEER FOREST</p><p class="tagline">Pi-powered reforestation.</p></div><span class="badge">TESTNET</span></header>
     <section id="screen-login" class="hidden" aria-labelledby="welcome-title">
       <p class="eyebrow intro-label">MANY SMALL ACTIONS. ONE GROWING FOREST.</p>
@@ -245,7 +247,7 @@
       </p>
     </section></article></section>
 <!-- APP LEGAL END -->
-    <footer><span>Go Pi. Go Green. Go The Pioneer Forest.</span><div><button type="button" class="text-button" data-open-legal="privacy-policy">Privacy Policy</button><span aria-hidden="true"> · </span><button type="button" class="text-button" data-open-legal="terms-of-service">Terms of Service</button></div><small>v0.9.10 · Testnet development preview</small></footer>
+    <footer><span>Go Pi. Go Green. Go The Pioneer Forest.</span><div><button type="button" class="text-button" data-open-legal="privacy-policy">Privacy Policy</button><span aria-hidden="true"> · </span><button type="button" class="text-button" data-open-legal="terms-of-service">Terms of Service</button></div><small>v0.9.11 · Testnet development preview</small></footer>
     <noscript><p>JavaScript is required for Pi login and the app. </p></noscript>
   </main>
 </body>

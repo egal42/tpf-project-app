@@ -24,3 +24,9 @@
   for = "/index"
   [headers.values]
     Cache-Control = "no-store, max-age=0"
+
+# Update checks use a small static file, never a serverless function.
+[[headers]]
+  for = "/app-version.json"
+  [headers.values]
+    Cache-Control = "no-store, max-age=0"

@@ -14,6 +14,7 @@ const server = http.createServer(async (req,res) => {
     const result = await impact.handler({httpMethod:req.method});
     res.writeHead(result.statusCode,result.headers); res.end(result.body); return;
   }
+  if(url.pathname==='/app-version.json'){res.setHeader('Content-Type','application/json');res.end(JSON.stringify({schema:'tpf_app_version_v1',version:require('../package.json').version}));return;}
   const action=url.pathname.split('/').pop();
   if (preview && ((url.pathname.startsWith('/.netlify/functions/') && ['my-forest','approve-payment','complete-payment','welcome-reward'].includes(action)) || url.pathname==='/__preview/create-payment')) {
     try {

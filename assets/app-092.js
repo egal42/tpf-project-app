@@ -1,4 +1,4 @@
-/* v0.9.10: add wallet-address consent for A2U; preserve SDK sandbox and support payments. */
+/* v0.9.11: add wallet-address consent for A2U; preserve SDK sandbox and support payments. */
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
@@ -7,6 +7,8 @@
   let currentUser = null, currentAccessToken = null, accountHistory = null, historyLoading = false, selectedAmount = 1, authenticating = false, paymentBusy = false, pendingPayment = null;
   let retryBusy = false, historyError = null, lastHistoryRead = 0, legacyBusy = false;
   let rewardData=null,rewardError=null,rewardTechnical=null,rewardBusy=false,rewardClaimBusy=false,rewardRequestId=0;
+  window.tpfUpdateBusy=()=>authenticating||paymentBusy||retryBusy||rewardClaimBusy||legacyBusy;
+  const updateActionState=()=>window.dispatchEvent(new Event('tpf-action-state'));
   const format = n => Number(n).toLocaleString(undefined,{maximumFractionDigits:3});
   const date = value => { const d = new Date(value); return Number.isFinite(d.getTime()) ? d.toLocaleString() : 'Date unavailable'; };
   const status = message => { $('status').textContent = message; };
@@ -57,7 +59,7 @@
     $('testLog').textContent = (line+'\n\n'+$('testLog').textContent).slice(0,6000);
   }
   function setPaymentBusy(busy) {
-    paymentBusy = busy;
+    paymentBusy = busy;updateActionState();
     $('sdkPaymentBtn').disabled = busy || !!pendingPayment || rewardClaimBusy;
     $('signOutBtn').disabled = busy || retryBusy || rewardClaimBusy;
     document.querySelectorAll('.amount-button').forEach(el => { el.disabled = busy || !!pendingPayment; });
@@ -79,7 +81,7 @@
   }
   async function handleLogin() {
     if (authenticating) return;
-    authenticating = true; $('loginBtn').disabled = true; status('Complete sign-in in Pi. If asked, allow access to your username, payments and wallet address.');
+    authenticating = true; updateActionState(); $('loginBtn').disabled = true; status('Complete sign-in in Pi. If asked, allow access to your username, payments and wallet address.');
     try {
       if (!window.Pi || typeof window.Pi.authenticate !== 'function') throw new Error('Open this app in Pi Browser or its configured Pi Sandbox to log in.');
       if (!await withTimeout(window.tpfPiReady,8000,'The connection to Pi took too long. Reload the app and try signing in again.')) throw new Error('We could not connect to Pi. Reload the app in Pi Browser and try again.');
@@ -97,7 +99,7 @@
       $('browserWarning').classList.add('hidden');
       showScreen(pendingPayment ? 'support' : 'home'); showPending(); loadWelcomeReward();
     } catch (error) { currentUser=null; currentAccessToken=null; accountHistory=null; status(error.message || 'Pi login failed. Please try again.'); $('browserWarning').classList.remove('hidden'); }
-    finally { authenticating = false; $('loginBtn').disabled = false; }
+    finally { authenticating = false; updateActionState(); $('loginBtn').disabled = false; }
   }
   function parseAmount() {
     const input = $('customAmount').value.trim().replace(',','.');
@@ -175,9 +177,9 @@
   }
   async function retryPayment() {
     if (!pendingPayment?.txid || retryBusy || paymentBusy) return;
-    retryBusy = true; showPending();
+    retryBusy = true; updateActionState(); showPending();
     try { await completePayment(pendingPayment); } catch (error) { paymentStatus(error.message); }
-    finally { retryBusy = false; showPending(); }
+    finally { retryBusy = false; updateActionState(); showPending(); }
   }
   async function loadAccountHistory() {
     if (!currentUser || historyLoading) return;
@@ -214,7 +216,7 @@
   async function restoreLegacy() {
     if(!currentUser || historyLoading || legacyBusy)return;
     const token=currentAccessToken;
-    legacyBusy=true;
+    legacyBusy=true;updateActionState();
     const button=$('restoreLegacyBtn'), output=$('legacyResult');
     button.disabled=true;
     let restored=0,unverified=0,checked=0;
@@ -241,7 +243,7 @@
       output.textContent=restored+' older payments verified and saved. '+unverified+' could not be verified. '+[...reasons].map(([reason,count])=>count+' × '+reason).join(' ')+' Original browser records are preserved.';
       $('legacyNotice').classList.remove('hidden');
     } finally {
-      legacyBusy=false;button.disabled=false;button.textContent='Verify older saved payments';
+      legacyBusy=false;updateActionState();button.disabled=false;button.textContent='Verify older saved payments';
       if(token!==currentAccessToken)output.textContent='';
     }
   }
@@ -263,14 +265,14 @@
   async function loadWelcomeReward(claim=false){
     if(!currentUser||rewardBusy)return;
     if(claim&&(paymentBusy||retryBusy||pendingPayment))return;
-    const token=currentAccessToken,requestId=++rewardRequestId;rewardBusy=true;rewardClaimBusy=claim;rewardError=null;rewardTechnical=null;renderWelcomeReward();showPending();
+    const token=currentAccessToken,requestId=++rewardRequestId;rewardBusy=true;rewardClaimBusy=claim;updateActionState();rewardError=null;rewardTechnical=null;renderWelcomeReward();showPending();
     try{
       const data=await accountRequest('welcome-reward',claim?{}:undefined);
       if(token!==currentAccessToken||requestId!==rewardRequestId)return;
       if(data.schema!=='tpf_welcome_reward_v1'||data.network!=='Pi Testnet'||data.amount!=='0.2'||data.limit!==20)throw Error('We could not verify the reward update. Refresh status and try again.');
       rewardData=data;
     }catch(error){if(token===currentAccessToken&&requestId===rewardRequestId){rewardTechnical=error.message.match(/\[Step:[^\]]*\]/)?.[0] || null;rewardError=error.message.replace(/\s*\[Step:[^\]]*\]/,'');if(error.name==='TimeoutError'||error.name==='AbortError')rewardError='The connection took too long. Refresh status to check whether your reward arrived. If it is still unfinished, choose Continue reward transfer.';if(claim&&rewardData?.state==='eligible')rewardData={...rewardData,state:'pending'};}}
-    finally{if(token===currentAccessToken&&requestId===rewardRequestId){rewardBusy=false;rewardClaimBusy=false;renderWelcomeReward();showPending();}}
+    finally{if(token===currentAccessToken&&requestId===rewardRequestId){rewardBusy=false;rewardClaimBusy=false;updateActionState();renderWelcomeReward();showPending();}}
   }
   function renderImpact(data,kind) {
     const impact = data?.impact;
