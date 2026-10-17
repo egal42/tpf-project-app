@@ -1,4 +1,4 @@
-/* v0.9.9: add wallet-address consent for A2U; preserve SDK sandbox and support payments. */
+/* v0.9.10: add wallet-address consent for A2U; preserve SDK sandbox and support payments. */
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
@@ -6,7 +6,7 @@
   const IMPACT_KEY = 'tpf_app_public_impact_v1', IMPACT_TTL = 6 * 60 * 60 * 1000;
   let currentUser = null, currentAccessToken = null, accountHistory = null, historyLoading = false, selectedAmount = 1, authenticating = false, paymentBusy = false, pendingPayment = null;
   let retryBusy = false, historyError = null, lastHistoryRead = 0, legacyBusy = false;
-  let rewardData=null,rewardError=null,rewardBusy=false,rewardClaimBusy=false,rewardRequestId=0;
+  let rewardData=null,rewardError=null,rewardTechnical=null,rewardBusy=false,rewardClaimBusy=false,rewardRequestId=0;
   const format = n => Number(n).toLocaleString(undefined,{maximumFractionDigits:3});
   const date = value => { const d = new Date(value); return Number.isFinite(d.getTime()) ? d.toLocaleString() : 'Date unavailable'; };
   const status = message => { $('status').textContent = message; };
@@ -68,8 +68,8 @@
     $('pendingNotice').classList.toggle('hidden',!pendingPayment);
     $('retryPaymentBtn').disabled = !pendingPayment?.txid || retryBusy;
     if (pendingPayment) $('pendingText').textContent = pendingPayment.txid
-      ? 'A submitted Testnet payment needs server confirmation. Retry confirmation; do not send a second payment.'
-      : 'An incomplete payment was reported without a transaction ID. Finish or cancel it in Pi Wallet before trying another payment.';
+      ? 'Your payment was submitted, but confirmation is not finished. Choose Check payment confirmation to check it again. Do not send another payment.'
+      : 'An earlier payment is unfinished. Open Pi Wallet and finish or cancel it before starting another payment.';
     setPaymentBusy(paymentBusy);
   }
   function onIncompletePaymentFound(payment) {
@@ -79,15 +79,15 @@
   }
   async function handleLogin() {
     if (authenticating) return;
-    authenticating = true; $('loginBtn').disabled = true; status('Checking Pi login…');
+    authenticating = true; $('loginBtn').disabled = true; status('Complete sign-in in Pi. If asked, allow access to your username, payments and wallet address.');
     try {
       if (!window.Pi || typeof window.Pi.authenticate !== 'function') throw new Error('Open this app in Pi Browser or its configured Pi Sandbox to log in.');
-      if (!await withTimeout(window.tpfPiReady,8000,'Pi SDK initialization timed out. Please reload.')) throw new Error('Pi SDK could not initialize. Please reload in Pi Browser.');
-      const auth = await withTimeout(window.Pi.authenticate(['username','payments','wallet_address'],onIncompletePaymentFound),12000,'Pi login timed out. Please try again.');
-      if (!auth?.user?.username || !auth.accessToken) throw new Error('Pi login did not return a valid session. Please try again.');
+      if (!await withTimeout(window.tpfPiReady,8000,'The connection to Pi took too long. Reload the app and try signing in again.')) throw new Error('We could not connect to Pi. Reload the app in Pi Browser and try again.');
+      const auth = await withTimeout(window.Pi.authenticate(['username','payments','wallet_address'],onIncompletePaymentFound),12000,'Sign-in took too long. Please try signing in again.');
+      if (!auth?.user?.username || !auth.accessToken) throw new Error('Pi could not complete your sign-in. Please try again.');
       currentAccessToken = auth.accessToken;
       const verified = await accountRequest('my-forest');
-      if (!verified.account?.uid || verified.account.uid !== auth.user.uid) throw new Error('The verified Pi account does not match the login session.');
+      if (!verified.account?.uid || verified.account.uid !== auth.user.uid) throw new Error('We could not match this sign-in to your Pi account. Please sign in again.');
       currentUser = verified.account;
       accountHistory = verified;lastHistoryRead=Date.now();
       if(!pendingPayment && verified.pending?.length) pendingPayment=verified.pending[0];
@@ -127,17 +127,17 @@
   }
   async function completePayment(record) {
     if (!currentUser) throw new Error('Please log in before confirming a payment.');
-    if (record.userUid && currentUser.uid && record.userUid !== currentUser.uid) throw new Error('This payment belongs to a different Pi session.');
+    if (record.userUid && currentUser.uid && record.userUid !== currentUser.uid) throw new Error('This payment belongs to another Pi account. Sign in with the account used for the payment.');
     const username = currentUser.username;
-    paymentStatus('Confirming Testnet payment on the server…');
+    paymentStatus('Checking that your payment arrived and saving it to your history…');
     const data = await accountRequest('complete-payment',{paymentId:record.paymentId,txid:record.txid,amount:record.amount,username});
-    if (data.identifier !== record.paymentId || data.status?.developer_completed !== true || data.status?.transaction_verified !== true) throw new Error('The server has not confirmed a completed, verified transaction yet. Retry confirmation shortly.');
+    if (data.identifier !== record.paymentId || data.status?.developer_completed !== true || data.status?.transaction_verified !== true) throw new Error('Your payment is not confirmed yet. Wait a moment, then choose Check payment confirmation.');
     const amount = Number(data.amount);
     if (!Number.isFinite(amount) || amount <= 0) throw new Error('The server returned an invalid payment amount.');
-    if (data.user_uid && currentUser.uid && data.user_uid !== currentUser.uid) throw new Error('The payment confirmation does not match this Pi session.');
-    if (data.accountRecordSaved !== true) throw new Error('The account record has not been saved. Retry confirmation; do not send another payment.');
+    if (data.user_uid && currentUser.uid && data.user_uid !== currentUser.uid) throw new Error('We could not match this payment to your Pi account. Please contact TPF.');
+    if (data.accountRecordSaved !== true) throw new Error('Your payment history has not been saved yet. Choose Check payment confirmation; do not send another payment.');
     pendingPayment = null; setPaymentBusy(false); showPending();
-    paymentStatus('Testnet payment confirmed. No real-world planting impact was created.');
+    paymentStatus('Payment received by TPF and saved to your history. This was a Test Pi payment.');
     log('Server confirmed Testnet payment',{paymentId:record.paymentId});
     await loadAccountHistory();
     showScreen('myforest');
@@ -154,7 +154,7 @@
         onReadyForServerApproval: async value => {
           try {
             const id = paymentId(value);
-            paymentStatus('Approving Testnet payment on the server…');
+            paymentStatus('Preparing your payment. Follow the instructions in Pi Wallet…');
             await accountRequest('approve-payment',{paymentId:id,amount,username});
             log('Server approval returned',{paymentId:id});
           } catch (error) { paymentStatus(error.message+' Pi Wallet may retry; you can cancel there.'); log('Approval failed',{message:error.message}); }
@@ -201,10 +201,10 @@
     $('personalCount').textContent=data ? String(data.totals.payments) : '—';
     $('accountConnection').textContent='App '+document.querySelector('meta[name="tpf-version"]').content+' · @'+currentUser.username+' · Account '+(data?.connection?.accountReference || 'not available')+' · '+(data?.connection?.recordEnvironment || 'unknown environment')+' · Pi Testnet';
     const items=data?.items || [];
-    $('personalLatest').textContent=items.length ? 'Latest confirmed payment: '+date(items[0].dateIso) : 'No confirmed payments recorded yet.';
+    $('personalLatest').textContent=items.length ? 'Latest confirmed payment: '+date(items[0].dateIso) : 'You haven’t sent a confirmed test payment yet.';
     const escape=TPF.escapeHtml;
-    $('historyList').innerHTML=items.length ? items.map(item=>'<article class="history-item"><div class="history-topline"><strong class="history-amount">'+escape(item.amount)+' Test Pi</strong><span class="history-date">'+escape(date(item.dateIso))+'</span></div><p class="tiny">Confirmed account record · Testnet only</p><details><summary>Payment details</summary><p class="tiny">Payment ID: '+escape(item.paymentId)+'<br />Transaction ID: '+escape(item.txid)+'</p></details></article>').join('') : '<div class="history-item">No confirmed Testnet payments recorded for this account yet.</div>';
-    $('historyStatus').textContent=historyError ? historyError+(data ? ' Showing the last loaded records; totals may be out of date.' : ' Account records have not loaded.') : data ? 'Account records loaded '+date(data.updatedAt)+'. Available after Pi login on your other devices.' : 'Account records have not loaded yet.';
+    $('historyList').innerHTML=items.length ? items.map(item=>'<article class="history-item"><div class="history-topline"><strong class="history-amount">'+escape(item.amount)+' Test Pi</strong><span class="history-date">'+escape(date(item.dateIso))+'</span></div><p class="tiny">Sent to TPF · Confirmed · Test Pi only</p><details><summary>Payment details</summary><p class="tiny">Payment ID: '+escape(item.paymentId)+'<br />Transaction ID: '+escape(item.txid)+'</p></details></article>').join('') : '<div class="history-item">You haven’t sent a confirmed test payment yet.</div>';
+    $('historyStatus').textContent=historyError ? historyError+(data ? ' Showing the last loaded records; totals may be out of date.' : ' Account records have not loaded.') : data ? 'History updated '+date(data.updatedAt)+'. Sign in with the same Pi account on another device to see it there.' : 'Account records have not loaded yet.';
     const legacy=TPF.loadHistory(currentUser.username);
     const ids=new Set(items.map(item=>item.paymentId));
     const remaining=legacy.filter(item=>!item.paymentId || !ids.has(item.paymentId));
@@ -247,27 +247,29 @@
   }
   function renderWelcomeReward(){
     const state=rewardData?.state;
-    const messages={eligible:'Welcome reward available: 0.2 Test Pi, once per Pioneer. '+(rewardData ? rewardData.successfulClaims+' of 20 claimed.' : ''),claimed:'Your 0.2 Test Pi welcome reward is confirmed.',pending:'Your welcome reward is pending. Check the same claim to continue safely.',exhausted:'All 20 welcome rewards have been claimed.',disabled:'The Testnet welcome reward is not enabled yet.',busy:'Another welcome reward is being confirmed. Please check again later.',identity_review:'A welcome claim exists for this Pi username. Account identity needs review.'};
-    const text=rewardError || (rewardData?.statusDetail ? messages[state]+' '+rewardData.statusDetail : messages[state]) || 'Checking welcome reward availability…';
-    $('welcomeRewardStatus').textContent=text;$('forestRewardStatus').textContent=text;
+    const messages={eligible:'You can receive 0.2 Test Pi from TPF. '+(rewardData ? rewardData.successfulClaims+' of 20 rewards received.' : ''),claimed:'You’ve received your 0.2 Test Pi welcome reward. View the receipt in My Forest.',pending:'Your reward has started, but it is not confirmed yet. Choose Continue reward transfer to finish checking and sending it.',exhausted:'All 20 welcome rewards have been claimed.',disabled:'Welcome rewards are currently switched off.',busy:'Another Pioneer’s reward is being processed. Please try again in a moment.',identity_review:'A reward is already linked to this Pi username, but we could not match the account. Contact TPF for help.'};
+    const text=rewardError || rewardData?.statusDetail || messages[state] || 'Checking welcome reward availability…';
+    $('welcomeRewardStatus').textContent=text;$('forestRewardStatus').textContent=state==='claimed'&&!rewardError?'You’ve received your 0.2 Test Pi welcome reward. Your receipt is below.':text;
+    $('forestRewardAction').classList.toggle('hidden',!currentUser||!['eligible','pending'].includes(state));
+    $('rewardHelp').classList.toggle('hidden',!rewardTechnical);$('rewardDetails').textContent=rewardTechnical || '';
     const button=$('claimWelcomeRewardBtn');
-    button.textContent=rewardBusy?'Confirming reward…':state==='pending'?'Check reward':state==='claimed'?'Reward received':'Claim 0.2 Test Pi';
+    button.textContent=rewardBusy?(rewardClaimBusy?'Sending your reward…':'Checking status…'):state==='pending'?'Continue reward transfer':state==='claimed'?'Reward received':'Claim 0.2 Test Pi';
     button.disabled=!currentUser||rewardBusy||paymentBusy||retryBusy||!!pendingPayment||!['eligible','pending'].includes(state);
     $('refreshWelcomeRewardBtn').disabled=!currentUser||rewardBusy;
     const record=rewardData?.record;
     $('forestRewardRecord').replaceChildren();
-    if(record){const article=document.createElement('article');article.className='history-item';const title=document.createElement('strong');title.className='history-amount';title.textContent='0.2 Test Pi received';const detail=document.createElement('p');detail.className='tiny';detail.textContent='Confirmed welcome reward · Testnet only · '+date(record.dateIso);const ids=document.createElement('p');ids.className='tiny';ids.style.overflowWrap='anywhere';ids.textContent='Payment ID: '+record.paymentId+' · Transaction ID: '+record.txid;article.append(title,detail,ids);$('forestRewardRecord').append(article);}
+    if(record){const article=document.createElement('article');article.className='history-item';const title=document.createElement('strong');title.className='history-amount';title.textContent='0.2 Test Pi received';const detail=document.createElement('p');detail.className='tiny';detail.textContent='Received from TPF · Confirmed · Test Pi only · '+date(record.dateIso);const ids=document.createElement('p');ids.className='tiny';ids.style.overflowWrap='anywhere';ids.textContent='Payment ID: '+record.paymentId+' · Transaction ID: '+record.txid;article.append(title,detail,ids);$('forestRewardRecord').append(article);}
   }
   async function loadWelcomeReward(claim=false){
     if(!currentUser||rewardBusy)return;
     if(claim&&(paymentBusy||retryBusy||pendingPayment))return;
-    const token=currentAccessToken,requestId=++rewardRequestId;rewardBusy=true;rewardClaimBusy=claim;rewardError=null;renderWelcomeReward();showPending();
+    const token=currentAccessToken,requestId=++rewardRequestId;rewardBusy=true;rewardClaimBusy=claim;rewardError=null;rewardTechnical=null;renderWelcomeReward();showPending();
     try{
       const data=await accountRequest('welcome-reward',claim?{}:undefined);
       if(token!==currentAccessToken||requestId!==rewardRequestId)return;
-      if(data.schema!=='tpf_welcome_reward_v1'||data.network!=='Pi Testnet'||data.amount!=='0.2'||data.limit!==20)throw Error('Welcome reward response could not be verified.');
+      if(data.schema!=='tpf_welcome_reward_v1'||data.network!=='Pi Testnet'||data.amount!=='0.2'||data.limit!==20)throw Error('We could not verify the reward update. Refresh status and try again.');
       rewardData=data;
-    }catch(error){if(token===currentAccessToken&&requestId===rewardRequestId){rewardError=error.message;if(claim&&rewardData?.state==='eligible')rewardData={...rewardData,state:'pending'};}}
+    }catch(error){if(token===currentAccessToken&&requestId===rewardRequestId){rewardTechnical=error.message.match(/\[Step:[^\]]*\]/)?.[0] || null;rewardError=error.message.replace(/\s*\[Step:[^\]]*\]/,'');if(error.name==='TimeoutError'||error.name==='AbortError')rewardError='The connection took too long. Refresh status to check whether your reward arrived. If it is still unfinished, choose Continue reward transfer.';if(claim&&rewardData?.state==='eligible')rewardData={...rewardData,state:'pending'};}}
     finally{if(token===currentAccessToken&&requestId===rewardRequestId){rewardBusy=false;rewardClaimBusy=false;renderWelcomeReward();showPending();}}
   }
   function renderImpact(data,kind) {
@@ -302,7 +304,7 @@
       if (paymentBusy || retryBusy || rewardClaimBusy) return;
       currentUser = null; currentAccessToken = null; accountHistory = null; historyError = null; pendingPayment = null; TPF.clearSession();
       $('app-shell').classList.add('hidden'); $('screen-login').classList.remove('hidden');
-      $('historyList').replaceChildren(); $('legacyResult').textContent=''; rewardData=null; rewardError=null; rewardRequestId++; rewardBusy=false; rewardClaimBusy=false; $('forestRewardRecord').replaceChildren(); renderWelcomeReward(); showPending(); status('Signed out. Pi login is required to enter.'); $('loginBtn').focus();
+      $('historyList').replaceChildren(); $('legacyResult').textContent=''; rewardData=null; rewardError=null; rewardTechnical=null; rewardRequestId++; rewardBusy=false; rewardClaimBusy=false; $('forestRewardRecord').replaceChildren(); renderWelcomeReward(); showPending(); status('You’re signed out. Sign in with Pi to return to your account.'); $('loginBtn').focus();
     });
     document.querySelectorAll('[data-screen-target]').forEach(el => el.addEventListener('click',() => showScreen(el.dataset.screenTarget)));
     document.querySelectorAll('.amount-button').forEach(el => el.addEventListener('click',() => {

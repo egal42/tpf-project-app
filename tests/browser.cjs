@@ -32,7 +32,7 @@ async function pay(p,amount='0.1'){await section(p,'support');await p.locator('#
  await scenario('Pi login gate, server verification, SDK settings and four sections',async()=>{
   const p=await pageFor('gate');assert.equal(await p.locator('#app-shell').isVisible(),false);await login(p);assert.deepEqual(await p.evaluate(()=>__config),{version:'2.0',sandbox:true});assert.deepEqual(await p.evaluate(()=>__scopes),['username','payments','wallet_address']);assert.deepEqual(await p.locator('.nav-button').allTextContents(),['Home','Support','My Forest','About']);
   for(const name of ['support','myforest','about','home']){await section(p,name);assert(await p.locator('[data-screen="'+name+'"].active').isVisible());assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);}
-  await section(p,'myforest');assert.match(await p.locator('#accountConnection').textContent(),/App 0\.9\.9.*Account [a-f0-9]{12}/);assert.equal(await p.locator('#clearHistoryBtn').count(),0);assert.deepEqual(p.errors,[]);await p.context().close();
+  await section(p,'myforest');assert.match(await p.locator('#accountConnection').textContent(),/App 0\.9\.10.*Account [a-f0-9]{12}/);assert.equal(await p.locator('#clearHistoryBtn').count(),0);assert.deepEqual(p.errors,[]);await p.context().close();
  });
  await scenario('Rejected login or unavailable account service cannot bypass authenticated entry',async()=>{
   let p=await pageFor('rejected',{authError:true});await p.locator('#loginBtn').click();assert.equal(await p.locator('#app-shell').isVisible(),false);await p.context().close();
@@ -111,11 +111,26 @@ async function pay(p,amount='0.1'){await section(p,'support');await p.locator('#
  await scenario('Lost reward response can be checked safely and does not create another claim',async()=>{
   const p=await pageFor('reward-retry');await login(p);await p.locator('#claimWelcomeRewardBtn:not([disabled])').waitFor();let first=true;
   await p.route('**/.netlify/functions/welcome-reward',async r=>{if(r.request().method()==='POST'&&first){first=false;await r.fetch();await r.fulfill({status:503,json:{error:'Confirmation response was lost. Check reward to continue.'}});}else await r.continue();});
-  await p.locator('#claimWelcomeRewardBtn').click();await p.waitForFunction(()=>document.getElementById('claimWelcomeRewardBtn').textContent==='Check reward');assert.match(await p.locator('#welcomeRewardStatus').innerText(),/response was lost/);await p.locator('#claimWelcomeRewardBtn').click();await p.waitForFunction(()=>document.getElementById('claimWelcomeRewardBtn').textContent==='Reward received');
+  await p.locator('#claimWelcomeRewardBtn').click();await p.waitForFunction(()=>document.getElementById('claimWelcomeRewardBtn').textContent==='Continue reward transfer');assert.match(await p.locator('#welcomeRewardStatus').innerText(),/response was lost/);await p.locator('#claimWelcomeRewardBtn').click();await p.waitForFunction(()=>document.getElementById('claimWelcomeRewardBtn').textContent==='Reward received');
   await section(p,'myforest');assert.equal(await p.locator('#forestRewardRecord article').count(),1);assert.equal(await p.locator('#personalCount').innerText(),'0');await p.context().close();
  });
  await scenario('Reward service failure does not block login or existing Testnet support payments',async()=>{
   const p=await pageFor('reward-unavailable');await p.route('**/.netlify/functions/welcome-reward*',r=>r.fulfill({status:503,json:{error:'Reward unavailable'}}));await login(p);await p.waitForFunction(()=>document.getElementById('welcomeRewardStatus').textContent==='Reward unavailable');assert(await p.locator('#claimWelcomeRewardBtn').isDisabled());await pay(p,'0.1');assert.equal(await p.locator('#personalTotal').innerText(),'0.1');assert.deepEqual(p.errors,[]);await p.context().close();
+ });
+ await scenario('Reward recovery explains the action, keeps diagnostics in details and refresh never sends',async()=>{
+  const p=await pageFor('reward-copy');let posts=0;
+  await p.route('**/.netlify/functions/welcome-reward*',async r=>{
+   if(r.request().method()==='POST'){posts++;return r.fulfill({status:503,json:{error:'We could not finish confirming your reward. Your progress is saved. Choose Continue reward transfer. [Step: pi-settle; HTTP 400; tx_bad_seq]'}});}
+   return r.fulfill({json:{schema:'tpf_welcome_reward_v1',network:'Pi Testnet',amount:'0.2',limit:20,state:'pending',successfulClaims:1,readId:new URL(r.request().url()).searchParams.get('read')}});
+  });
+  await login(p);await p.locator('#claimWelcomeRewardBtn:not([disabled])').waitFor();
+  assert.equal(await p.locator('#claimWelcomeRewardBtn').innerText(),'Continue reward transfer');
+  await p.locator('#refreshWelcomeRewardBtn').click();await p.waitForFunction(()=>!document.getElementById('refreshWelcomeRewardBtn').disabled);assert.equal(posts,0);
+  await p.locator('#claimWelcomeRewardBtn').click();await p.locator('#rewardHelp:not(.hidden)').waitFor();
+  assert.match(await p.locator('#welcomeRewardStatus').innerText(),/Your progress is saved/);assert(!await p.locator('#welcomeRewardStatus').innerText().then(t=>t.includes('HTTP')));
+  await p.locator('#rewardHelp summary').click();assert.match(await p.locator('#rewardDetails').innerText(),/pi-settle; HTTP 400; tx_bad_seq/);
+  assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+  await p.locator('#signOutBtn').click();assert.equal(await p.locator('#rewardDetails').textContent(),'');assert.deepEqual(p.errors,[]);await p.context().close();
  });
  await scenario('A slow reward status read does not block support or sign-out and cannot leak across accounts',async()=>{
   const p=await pageFor('reward-slow');let release;const held=new Promise(r=>release=r);

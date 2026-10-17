@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#03170d" />
   <meta name="color-scheme" content="dark" />
-  <meta name="tpf-version" content="0.9.9" />
+  <meta name="tpf-version" content="0.9.10" />
   <title>The Pioneer Forest · Testnet</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="assets/tpf-logo.png" />
@@ -17,7 +17,7 @@
   <script defer src="assets/app-092.js"></script>
 </head>
 <body>
-  <div id="loading-screen" role="status" aria-live="polite"><img src="assets/tpf-logo.png" alt="" width="90" /><p>The Pioneer Forest</p><span>Taking root…</span></div>
+  <div id="loading-screen" role="status" aria-live="polite"><img src="assets/tpf-logo.png" alt="" width="90" /><p>The Pioneer Forest</p><span>Opening the app…</span></div>
   <main class="card">
     <header class="brand"><img class="tpf-logo" src="assets/tpf-logo.png" alt="The Pioneer Forest logo" width="80" height="80" /><div><p class="eyebrow">THE PIONEER FOREST</p><p class="tagline">Pi-powered reforestation.</p></div><span class="badge">TESTNET</span></header>
     <section id="screen-login" class="hidden" aria-labelledby="welcome-title">
@@ -32,8 +32,8 @@
         <button type="button" class="text-button" data-open-legal="transparency">Impact &amp; transparency</button>
       </section>
       <div class="testnet-note"><strong>A Testnet journey.</strong> No real Pi donation, tree planting or CO₂ credit is created by a test payment.</div>
-      <button class="primary full-width" id="loginBtn">Continue with Pi Login <span aria-hidden="true">→</span></button>
-      <p id="status" class="status" role="status" aria-live="polite">Pi login is required to enter.</p>
+      <button class="primary full-width" id="loginBtn">Sign in with Pi <span aria-hidden="true">→</span></button>
+      <p id="status" class="status" role="status" aria-live="polite">Sign in with Pi to view your activity and try Testnet payments.</p>
       <div id="browserWarning" class="warning hidden">Open this app in Pi Browser or its configured Pi Sandbox to use Pi login and Testnet payments.</div>
     </section>
     <section id="app-shell" class="hidden" aria-label="Your TPF app">
@@ -51,42 +51,44 @@
         <section class="impact-panel" aria-label="Real TPF global impact"><p class="eyebrow">REAL TPF GLOBAL IMPACT</p><div class="stats"><div><strong data-global-trees>—</strong><span>Trees planted</span></div><div><strong data-global-co2>—</strong><span>kg estimated CO₂ capture</span></div></div><p class="tiny" data-impact-status>Loading the public TPF summary…</p><p class="tiny">Estimated capture over time, not CO₂ already removed. These are global project totals, separate from your Testnet activity.</p><button type="button" class="text-button" data-open-legal="transparency">Impact &amp; transparency</button></section>
         <section class="info-block" aria-labelledby="welcome-reward-title">
           <p class="eyebrow">TESTNET WELCOME REWARD</p><h2 id="welcome-reward-title">Start with 0.2 Test Pi.</h2>
-          <p>One welcome reward per Pioneer after Pi login. The initial round is limited to 20 successful claims. No donation or purchase is required.</p>
+          <p>Receive 0.2 Test Pi from the TPF app, once per Pioneer after signing in with Pi. There are 20 rewards in this first round. No donation or purchase is required.</p>
           <p class="tiny">Test Pi only. This reward has no real-world planting or CO₂ impact.</p>
           <p id="welcomeRewardStatus" class="status" role="status" aria-live="polite">Checking welcome reward availability…</p>
           <button id="claimWelcomeRewardBtn" class="secondary" disabled>Claim 0.2 Test Pi</button>
-          <button id="refreshWelcomeRewardBtn" class="text-button">Check reward status</button>
+          <button id="refreshWelcomeRewardBtn" class="text-button">Refresh status</button>
+          <p class="tiny">Claiming sends Test Pi from TPF to your wallet. Refresh status only checks for updates.</p>
+          <details id="rewardHelp" class="hidden"><summary>Reward help &amp; technical details</summary><p class="tiny">If the reward stays unfinished, contact egal42.pi@gmail.com with the details below. Never send your wallet passphrase or private key.</p><pre id="rewardDetails"></pre></details>
         </section>
-        <div class="action-grid"><button class="primary" data-screen-target="support">Try Testnet support →</button><button class="secondary" data-screen-target="myforest">View My Forest</button></div>
+        <div class="action-grid"><button class="primary" data-screen-target="support">Try a test payment →</button><button class="secondary" data-screen-target="myforest">View My Forest</button></div>
       </section>
       <section class="app-screen" data-screen="support" aria-labelledby="support-title">
-        <p class="eyebrow">TRY THE SUPPORT JOURNEY</p><h1 id="support-title" tabindex="-1">Support the forest.</h1><p class="lead">Choose an amount to test the Pi payment flow.</p>
+        <p class="eyebrow">TRY A TEST PAYMENT</p><h1 id="support-title" tabindex="-1">Try supporting the forest.</h1><p class="lead">Send Test Pi to the TPF app and see how a payment works.</p>
         <div class="testnet-note"><strong>Test Pi only.</strong> This is a payment test, not a real donation or a purchase of trees or CO₂ credits.</div>
-        <div id="pendingNotice" class="warning hidden"><p id="pendingText">A previous payment needs confirmation.</p><button class="secondary" id="retryPaymentBtn">Retry payment confirmation</button></div>
+        <div id="pendingNotice" class="warning hidden"><p id="pendingText">A previous payment needs confirmation.</p><button class="secondary" id="retryPaymentBtn">Check payment confirmation</button></div>
         <section class="support-panel" aria-label="Testnet amount">
           <h2>Choose Test Pi amount</h2><div class="amount-grid"><button class="amount-button active" data-amount="1" aria-pressed="true">1 Test Pi</button><button class="amount-button" data-amount="3" aria-pressed="false">3 Test Pi</button><button class="amount-button" data-amount="5" aria-pressed="false">5 Test Pi</button></div>
           <label for="customAmount">Or enter a custom Test Pi amount</label><input id="customAmount" type="text" inputmode="decimal" placeholder="For example, 0.01" autocomplete="off" aria-describedby="selectedAmountLabel" /><p class="tiny" id="selectedAmountLabel">Selected: 1 Test Pi</p>
           <button class="primary full-width" id="sdkPaymentBtn">Send Test Pi <span aria-hidden="true">→</span></button><p id="appStatus" class="status" role="status" aria-live="polite">Choose an amount, then send Test Pi.</p>
         </section>
-        <details><summary>Payment diagnostics</summary><p class="tiny">Pi Wallet handles confirmation. No wallet passphrase is requested here.</p><pre id="testLog">No payment activity in this session.</pre></details>
+        <details><summary>Payment help &amp; technical details</summary><p class="tiny">Pi Wallet handles confirmation. No wallet passphrase is requested here.</p><pre id="testLog">No payment activity in this session.</pre></details>
       </section>
       <section class="app-screen" data-screen="myforest" aria-labelledby="forest-title">
         <p class="eyebrow">YOUR PERSONAL ACTIVITY</p><h1 id="forest-title" tabindex="-1">My Forest.</h1><p id="profileName" class="lead"></p>
-        <section class="impact-panel"><p class="eyebrow">YOUR CONFIRMED TESTNET ACCOUNT RECORDS</p><div class="stats personal-stats"><div><strong id="personalTotal">—</strong><span>Test Pi confirmed</span></div><div><strong id="personalCount">—</strong><span>Confirmed payments</span></div></div><p class="tiny" id="personalLatest">No completed payment recorded yet.</p></section>
+        <section class="impact-panel"><p class="eyebrow">TEST PI YOU HAVE SENT</p><div class="stats personal-stats"><div><strong id="personalTotal">—</strong><span>Test Pi sent</span></div><div><strong id="personalCount">—</strong><span>Payments sent</span></div></div><p class="tiny" id="personalLatest">You haven’t sent a test payment yet.</p></section>
         <p class="testnet-note">Your Test Pi activity does not represent planted trees or CO₂ capture. Personal real-world planting records are not linked to this app.</p>
         <section class="info-block" aria-labelledby="forest-reward-title"><h2 id="forest-reward-title">Welcome reward</h2>
           <p class="tiny">Test Pi received from the app is recorded separately from your support payments above.</p>
-          <p id="forestRewardStatus" role="status" aria-live="polite">Checking welcome reward…</p><div id="forestRewardRecord"></div>
+          <p id="forestRewardStatus" role="status" aria-live="polite">Checking welcome reward…</p><div id="forestRewardRecord"></div><button id="forestRewardAction" class="text-button hidden" data-screen-target="home">Go to welcome reward →</button>
         </section>
-        <h2>Payment history</h2><p class="tiny">Confirmed payments are saved to your Pi account record. Sign in on another device to see the same history. Clearing browser data does not delete these records.</p><p id="historyStatus" class="status" role="status" aria-live="polite"></p>
-        <details><summary>Connection details</summary><p class="tiny" id="accountConnection">Account connection has not loaded.</p></details>
+        <h2>Payments to TPF</h2><p class="tiny">Confirmed payments are saved by TPF and linked to your Pi account. Sign in on another device to see the same history. Clearing browser data does not delete these records.</p><p id="historyStatus" class="status" role="status" aria-live="polite"></p>
+        <details><summary>Connection details</summary><p class="tiny" id="accountConnection">Connection details have not loaded yet.</p></details>
         <div id="historyList" class="history-list"></div><button class="text-button" id="refreshHistoryBtn">Refresh account history</button><div id="legacyNotice" class="warning hidden"><p id="legacyText"></p><p id="legacyResult" role="status" aria-live="polite"></p><button class="secondary" id="restoreLegacyBtn">Verify older saved payments</button></div>
       </section>
       <section class="app-screen" data-screen="about" aria-labelledby="about-title">
         <p class="eyebrow">THE IDEA BEHIND THE PIONEER FOREST</p><h1 id="about-title" tabindex="-1">Growing in the open.</h1><p class="lead">The Pioneer Forest connects Pi-powered support with reforestation and transparent public records.</p>
         <section class="info-block"><h2>Real project. Testnet app.</h2><p>The website reports real trees planted and estimated CO₂ capture supported by planting records. This app uses Pi authentication and Testnet payments to test participation. Test payments never increase the real impact totals.</p></section>
         <section class="info-block"><h2>Follow the records.</h2><p>View The Pioneer Forest’s impact and transparency information here, or follow the official Fireside channel for project updates and planting records.</p><ul class="link-list"><li><button type="button" class="text-button" data-open-legal="transparency">Impact &amp; transparency</button></li><li><a href="https://fireside.pinet.com/channels/ThePioneerForest">Official Fireside channel ↗</a></li></ul></section>
-        <p class="tiny">Pi login identifies your account. Confirmed Testnet payment identifiers, amounts and dates are saved securely for your account history, accessible across devices. Testnet records remain separate from real planting impact.</p>
+        <p class="tiny">Pi login identifies your account. Confirmed Testnet payment IDs, amounts and dates are saved by TPF for your account history, accessible across devices. Testnet records remain separate from real planting impact.</p>
       </section>
     </section>
 <!-- APP LEGAL START -->
@@ -243,7 +245,7 @@
       </p>
     </section></article></section>
 <!-- APP LEGAL END -->
-    <footer><span>Go Pi. Go Green. Go The Pioneer Forest.</span><div><button type="button" class="text-button" data-open-legal="privacy-policy">Privacy Policy</button><span aria-hidden="true"> · </span><button type="button" class="text-button" data-open-legal="terms-of-service">Terms of Service</button></div><small>v0.9.9 · Testnet development preview</small></footer>
+    <footer><span>Go Pi. Go Green. Go The Pioneer Forest.</span><div><button type="button" class="text-button" data-open-legal="privacy-policy">Privacy Policy</button><span aria-hidden="true"> · </span><button type="button" class="text-button" data-open-legal="terms-of-service">Terms of Service</button></div><small>v0.9.10 · Testnet development preview</small></footer>
     <noscript><p>JavaScript is required for Pi login and the app. </p></noscript>
   </main>
 </body>

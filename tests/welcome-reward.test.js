@@ -89,7 +89,7 @@ test('Corrupt campaign data and unavailable storage fail closed without payment 
 test('Diagnostics expose only fixed stages and HTTP status, never transport secrets or bodies',async()=>{
  const f=fixture();f.transport.create=async()=>{throw Object.assign(Error('SECRET-SEED response body'),{httpStatus:403});};
  const result=await f.run();assert.deepEqual(body(result).diagnostic,{stage:'pi-create',httpStatus:403});assert(!result.body.includes('SECRET'));assert.equal(body(await f.run('alice','GET')).progressStage,'creating');
- const retry=await f.run();assert.match(body(retry).error,/0 matching incomplete payments/);assert.equal(body(retry).diagnostic.stage,'pi-incomplete');assert.equal(f.calls.broadcast,0);
+ const retry=await f.run();assert.match(body(retry).error,/transfer is paused/);assert.equal(body(retry).diagnostic.stage,'pi-incomplete');assert.equal(f.calls.broadcast,0);
 });
 test('Configuration diagnostics do not expose invalid seed values',async()=>{
  const f=fixture(),service=f.service({getTransport:async()=>{throw Error('invalid SECRET-SEED');}});
@@ -97,20 +97,20 @@ test('Configuration diagnostics do not expose invalid seed values',async()=>{
 });
 test('Status diagnoses stuck creation against Pi without creating, signing, broadcasting or changing records',async()=>{
  const f=fixture();f.lostCreate();await f.run();const before=f.data,calls=clone(f.calls);
- const found=body(await f.run('alice','GET'));assert.match(found.statusDetail,/Pi payment found/);assert.deepEqual(f.calls,calls);assert.deepEqual(f.data,before);
- f.payments.clear();assert.match(body(await f.run('alice','GET')).statusDetail,/no matching incomplete payment/);assert.deepEqual(f.data,before);
+ const found=body(await f.run('alice','GET'));assert.match(found.statusDetail,/reward is ready to continue/);assert.deepEqual(f.calls,calls);assert.deepEqual(f.data,before);
+ f.payments.clear();assert.match(body(await f.run('alice','GET')).statusDetail,/not confirmed yet/);assert.deepEqual(f.data,before);
  f.transport.incomplete=async()=>{throw Object.assign(Error('private error body'),{httpStatus:403});};
  const failed=await f.run('alice','GET');assert.deepEqual(body(failed).diagnostic,{stage:'pi-incomplete',httpStatus:403});assert(!failed.body.includes('private error body'));assert.deepEqual(f.data,before);assert.deepEqual(f.calls,calls);
 });
 test('Wallet consent is verified on the server before reserving or creating a reward',async()=>{
  const f=fixture();f.users.set('no-consent',{uid:'uid-noconsent',username:'no-consent',credentials:{scopes:['username','payments']}});
- const denied=await f.run('no-consent');assert.equal(denied.statusCode,403);assert.match(body(denied).error,/wallet-address permission/);assert.equal(f.data,null);assert.equal(f.calls.create,0);
- assert.match(body(await f.run('no-consent','GET')).statusDetail,/wallet-address permission/);
+ const denied=await f.run('no-consent');assert.equal(denied.statusCode,403);assert.match(body(denied).error,/wallet.address/);assert.equal(f.data,null);assert.equal(f.calls.create,0);
+ assert.match(body(await f.run('no-consent','GET')).statusDetail,/wallet.address/);
 });
 test('Definitive missing-scope rejection remains retryable and never becomes an unknown pending creation',async()=>{
  const f=fixture(),create=f.transport.create;
  f.transport.create=async()=>{throw Object.assign(Error('secret response'),{piCode:'missing_scope',httpStatus:401});};
- const r=await f.run();assert.match(body(r).error,/wallet-address permission/);assert.equal(f.data.claims[0].phase,'reserved');assert.equal(f.data.claims[0].lastRejection,'missing_scope');assert.equal(f.calls.broadcast,0);
+ const r=await f.run();assert.match(body(r).error,/wallet.address/);assert.equal(f.data.claims[0].phase,'reserved');assert.equal(f.data.claims[0].lastRejection,'missing_scope');assert.equal(f.calls.broadcast,0);
  f.transport.create=create;assert.equal(body(await f.run()).state,'claimed');assert.equal(f.calls.broadcast,1);
 });
 test('Old unsigned creation with no Pi payment recovers the same claim once; concurrent retries cannot double-pay',async()=>{
