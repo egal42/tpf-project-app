@@ -86,3 +86,12 @@ test('Corrupt campaign data and unavailable storage fail closed without payment 
  const f=fixture();await f.store.setJSON(ROOT,{schema:'wrong',claims:[],active:null},{onlyIfNew:true});assert.equal((await f.run()).statusCode,503);assert.equal(f.calls.create,0);
  const service=f.service({getStore:async()=>{throw Error('unavailable')}});assert.equal((await service(f.event())).statusCode,503);
 });
+test('Diagnostics expose only fixed stages and HTTP status, never transport secrets or bodies',async()=>{
+ const f=fixture();f.transport.create=async()=>{throw Object.assign(Error('SECRET-SEED response body'),{httpStatus:403});};
+ const result=await f.run();assert.deepEqual(body(result).diagnostic,{stage:'pi-create',httpStatus:403});assert(!result.body.includes('SECRET'));assert.equal(body(await f.run('alice','GET')).progressStage,'creating');
+ const retry=await f.run();assert.match(body(retry).error,/0 matching incomplete payments/);assert.equal(body(retry).diagnostic.stage,'pi-incomplete');assert.equal(f.calls.broadcast,0);
+});
+test('Configuration diagnostics do not expose invalid seed values',async()=>{
+ const f=fixture(),service=f.service({getTransport:async()=>{throw Error('invalid SECRET-SEED');}});
+ const r=await service(f.event());assert.equal(body(r).diagnostic.stage,'wallet-configuration');assert(!r.body.includes('SECRET'));assert.equal(f.data,null);
+});
