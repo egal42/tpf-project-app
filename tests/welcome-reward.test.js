@@ -12,7 +12,7 @@ function fixture(){
   async settle(signed,p){if(!chain.has(signed.txid)){chain.add(signed.txid);calls.broadcast++;}const payment=payments.get(p.identifier);payment.transaction={txid:signed.txid,verified:true};payment.status.transaction_verified=true;if(submitLost){submitLost=false;throw Error('Lost submit response');}},
   async complete(id,txid){calls.complete++;const p=payments.get(id);assert.equal(p.transaction.txid,txid);p.status.developer_completed=true;if(completeLost){completeLost=false;throw Error('Lost complete response');}return clone(p);}
  };
- const request=async(url,options)=>{const name=options.headers.Authorization?.replace('Bearer ','');const user=users.get(name)||{uid:'uid-'+name,username:name};return {ok:!!name&&name!=='invalid',json:async()=>user};};
+ const request=async(url,options)=>{const name=options.headers.Authorization?.replace('Bearer ','');const user=users.get(name)||{uid:'uid-'+name,username:name,credentials:{scopes:['username','payments','wallet_address']}};return {ok:!!name&&name!=='invalid',json:async()=>user};};
  const service=options=>createRewardService({fetch:request,getStore:async()=>store,getTransport:async()=>transport,enabled:true,allowedContext:'production',...options});
  const event=(name='alice',method='POST',extra={})=>({httpMethod:method,headers:{Authorization:'Bearer '+name},body:method==='POST'?'{}':'',deployContext:'production',readId:'test-read',...extra});
  const run=(name,method,extra)=>service()(event(name,method,extra));
@@ -101,4 +101,34 @@ test('Status diagnoses stuck creation against Pi without creating, signing, broa
  f.payments.clear();assert.match(body(await f.run('alice','GET')).statusDetail,/no matching incomplete payment/);assert.deepEqual(f.data,before);
  f.transport.incomplete=async()=>{throw Object.assign(Error('private error body'),{httpStatus:403});};
  const failed=await f.run('alice','GET');assert.deepEqual(body(failed).diagnostic,{stage:'pi-incomplete',httpStatus:403});assert(!failed.body.includes('private error body'));assert.deepEqual(f.data,before);assert.deepEqual(f.calls,calls);
+});
+test('Wallet consent is verified on the server before reserving or creating a reward',async()=>{
+ const f=fixture();f.users.set('no-consent',{uid:'uid-noconsent',username:'no-consent',credentials:{scopes:['username','payments']}});
+ const denied=await f.run('no-consent');assert.equal(denied.statusCode,403);assert.match(body(denied).error,/wallet-address permission/);assert.equal(f.data,null);assert.equal(f.calls.create,0);
+ assert.match(body(await f.run('no-consent','GET')).statusDetail,/wallet-address permission/);
+});
+test('Definitive missing-scope rejection remains retryable and never becomes an unknown pending creation',async()=>{
+ const f=fixture(),create=f.transport.create;
+ f.transport.create=async()=>{throw Object.assign(Error('secret response'),{piCode:'missing_scope',httpStatus:401});};
+ const r=await f.run();assert.match(body(r).error,/wallet-address permission/);assert.equal(f.data.claims[0].phase,'reserved');assert.equal(f.data.claims[0].lastRejection,'missing_scope');assert.equal(f.calls.broadcast,0);
+ f.transport.create=create;assert.equal(body(await f.run()).state,'claimed');assert.equal(f.calls.broadcast,1);
+});
+test('Old unsigned creation with no Pi payment recovers the same claim once; concurrent retries cannot double-pay',async()=>{
+ const f=fixture(),create=f.transport.create;f.transport.create=async()=>{f.calls.create++;throw Error('unknown outcome');};await f.run();const id=f.data.claims[0].id;
+ f.transport.create=create;const future=new Date(Date.now()+180000).toISOString(),service=f.service({now:()=>future});
+ await Promise.all(Array.from({length:10},()=>service(f.event())));
+ const r=await service(f.event());assert.equal(body(r).state,'claimed');assert.equal(f.data.claims[0].id,id);assert.equal(f.data.claims[0].recoveryAttempts,1);assert.equal(f.calls.broadcast,1);assert.equal(f.calls.create,2);
+});
+test('Unknown creation recovery is bounded and cannot proceed if another Pi payment exists',async()=>{
+ const f=fixture();f.transport.create=async()=>{f.calls.create++;throw Error('unknown');};await f.run();const future=new Date(Date.now()+180000).toISOString(),service=f.service({now:()=>future});
+ f.payments.set('unrelated',{metadata:{},user_uid:'someone',status:{developer_completed:false}});await service(f.event());assert.equal(f.calls.create,1);
+ f.payments.clear();await service(f.event());assert.equal(f.calls.create,2);
+ const later=f.service({now:()=>new Date(Date.now()+360000).toISOString()});await later(f.event());assert.equal(f.calls.create,2);assert.equal(f.calls.broadcast,0);
+});
+test('A late old create response cannot replace the selected recovered payment or authorize a second transfer',async()=>{
+ const f=fixture(),create=f.transport.create;let release,entered;const ready=new Promise(r=>entered=r);
+ f.transport.create=async p=>{entered();await new Promise(r=>release=r);return create(p);};
+ const first=f.run();await ready;f.transport.create=create;
+ const service=f.service({now:()=>new Date(Date.now()+180000).toISOString()});assert.equal(body(await service(f.event())).state,'claimed');const selected=f.data.claims[0].paymentId;
+ release();await first;assert.equal(f.data.claims[0].paymentId,selected);assert.equal(f.calls.broadcast,1);assert.equal(f.calls.build,1);
 });

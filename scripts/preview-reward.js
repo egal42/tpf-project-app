@@ -23,5 +23,5 @@ const transport={
  async settle(signed,payment){const p=await this.get(payment.identifier);p.transaction={txid:signed.txid,verified:true};p.status.transaction_verified=true;await write(file(p.identifier),p);},
  async complete(id,txid){const p=await this.get(id);if(p.transaction?.txid!==txid)throw Error('Simulation mismatch');p.status.developer_completed=true;await write(file(id),p);return p;}
 };
-const request=async(url,options)=>{const token=options.headers.Authorization||'';const match=/^Bearer local-preview:([a-z0-9_-]{1,40})$/.exec(token);return {ok:!!match,json:async()=>match?{uid:'local-'+match[1],username:match[1]}:{}};};
+const request=async(url,options)=>{const token=options.headers.Authorization||'';const match=/^Bearer local-preview:([a-z0-9_-]{1,40})$/.exec(token);return {ok:!!match,json:async()=>match?{uid:'local-'+match[1],username:match[1],credentials:{scopes:['username','payments','wallet_address']}}:{}};};
 module.exports=createRewardService({fetch:request,getStore:async()=>store,getTransport:async()=>transport,enabled:true,allowedContext:'local-preview'});

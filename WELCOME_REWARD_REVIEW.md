@@ -1,4 +1,4 @@
-# TPF Testnet Welcome Reward — v0.9.7 local candidate
+# TPF Testnet Welcome Reward — v0.9.8 local recovery candidate
 
 Status: implemented and tested locally; NOT deployed. Existing live v0.9.6 is unchanged.
 
@@ -31,7 +31,7 @@ The bounded campaign journal lives at `welcome/campaign-v1` in the existing cont
 
 Phases: reserved → creating → created → building → signed → completed.
 
-- Reservation and `creating` are durable before Pi payment creation. Create is attempted only once. If its response is lost, retries query Pi's incomplete A2U payments and match exact campaign/claim metadata; they never issue another create.
+- Reservation and `creating` are durable before Pi payment creation. If its response is lost, retries query Pi's incomplete A2U payments and match exact campaign/claim metadata. v0.9.8 permits one explicit recovery create only when the claim has no payment ID or signed XDR, has remained in creating for at least 120 seconds, and Pi returns no incomplete payments at all. The same claim ID and audit record are retained. Atomic create-owner fencing prevents late responses from selecting another payment or reaching signing. Known API rejections retain a retryable reserved claim and a whitelisted rejection code.
 - The payment ID is durable before signing. Signing uses a fenced owner token: an interrupted signer cannot later overwrite another instance's signed transaction.
 - Signed transaction bytes/hash are durable before broadcast. Retries look up the hash and, if needed and still valid, broadcast the **same bytes**. Blockchain sequence/hash rules prevent a second payment from that replay.
 - If broadcast/completion succeeds but a response or final record write is lost, Check reward reconciles the same hash/payment and finalizes the existing claim.
@@ -40,7 +40,7 @@ Phases: reserved → creating → created → building → signed → completed.
 
 ### Operator review for an unresolved claim
 
-Do not delete/reset the journal, remove its active claim, or create a replacement payment to get past a pending state. That can defeat duplicate protection. Inspect the private journal's phase, claim ID, official payment ID and saved transaction hash; compare Pi's payment/incomplete-payment API and Testnet transaction lookup. A known submitted transaction must be completed/reconciled, never replaced. If no safe outcome is provable, keep payouts paused. No automatic timeout takeover of payment creation and no automatic rebuilding after submission are provided.
+Do not delete/reset the journal, remove its active claim, or create a replacement payment to get past a pending state. That can defeat duplicate protection. Inspect the private journal's phase, claim ID, official payment ID and saved transaction hash; compare Pi's payment/incomplete-payment API and Testnet transaction lookup. A known submitted transaction must be completed/reconciled, never replaced. If no safe outcome is provable, keep payouts paused. The bounded unsigned-creation recovery described above runs only on an explicit POST, never on a status read. No automatic rebuilding after submission is provided.
 
 Pi UID is app-specific and can change when permissions are revoked. The additional username guard covers an unchanged verified username, but Pi's available identity fields cannot prove universal identity after **both** a rename and permission reset. Such identity changes require separate verified review; this app does not claim device/IP-based or human-identity guarantees.
 
@@ -79,4 +79,10 @@ Local success is not a substitute for the first genuine Pi/Netlify A2U test. The
 - 6 additional signing/adapter checks passed against the function produced by Netlify's official packaging tool.
 - Static production build passed; browser assets retain content fingerprints; server code, simulation data and signing configuration are excluded.
 - `npm audit --omit=dev --audit-level=high`: 0 known vulnerabilities.
-- Existing Pi SDK initialization/scopes, original U2A server handlers, validation key, logo, manifest and embedded approved legal text were preserved.
+- Pi SDK initialization, original U2A server handlers, validation key, logo, manifest and embedded approved legal text were preserved. Login adds wallet_address consent for A2U. The server verifies this scope before reserving or recovering a claim.
+
+## v0.9.8 investigation
+
+Observed production claim: creating, no paymentId, no signed transaction; Pi lookup returns zero matches. Original create error was not retained, so its cause is not proven. Code inspection found login omitted wallet_address. Official SDK reference documents that scope and advanced A2U docs require recipient wallet-sharing consent. Fix requests consent, preflights server-verified scopes, preserves recognized rejection codes without bodies/secrets, and adds bounded recovery without deleting claim history. No claim is reset by deployment or GET.
+
+Sources: https://github.com/pi-apps/pi-platform-docs/blob/master/SDK_reference.md ; https://github.com/pi-apps/pi-platform-docs/blob/master/payments_advanced.md ; https://github.com/pi-apps/pi-nodejs/blob/main/src/index.ts ; https://github.com/pi-apps/pi-nodejs/blob/main/src/types/errors.ts

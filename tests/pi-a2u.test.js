@@ -58,3 +58,10 @@ test('Hosted reward handler rejects unauthenticated, unsupported and oversized r
  assert.equal((await handler(new Request('https://example.test/welcome-reward',{method:'DELETE'}),{deploy:{context:'production'}})).status,405);
  assert.equal((await handler(new Request('https://example.test/welcome-reward',{method:'POST',body:'x'.repeat(5000)}),{deploy:{context:'production'}})).status,413);
 });
+test('Only recognized Pi rejection codes survive transport errors, never private response details',async()=>{
+ const f=await setup();
+ for(const code of ['missing_scope','SECRET-SEED']){
+  const transport=await createPiA2U({...f.config,fetch:async()=>({ok:false,status:401,json:async()=>({error:code,error_message:'SECRET-SEED'})})});
+  await assert.rejects(()=>transport.create({}),e=>e.httpStatus===401&&e.piCode===(code==='missing_scope'?code:undefined)&&!e.message.includes('SECRET'));
+ }
+});

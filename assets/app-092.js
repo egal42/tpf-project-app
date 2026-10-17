@@ -1,4 +1,4 @@
-/* v0.9.7: same Pi SDK sandbox, scopes, payment payload and server endpoints as v0.9.1b. */
+/* v0.9.8: add wallet-address consent for A2U; preserve SDK sandbox and support payments. */
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
@@ -83,7 +83,7 @@
     try {
       if (!window.Pi || typeof window.Pi.authenticate !== 'function') throw new Error('Open this app in Pi Browser or its configured Pi Sandbox to log in.');
       if (!await withTimeout(window.tpfPiReady,8000,'Pi SDK initialization timed out. Please reload.')) throw new Error('Pi SDK could not initialize. Please reload in Pi Browser.');
-      const auth = await withTimeout(window.Pi.authenticate(['username','payments'],onIncompletePaymentFound),12000,'Pi login timed out. Please try again.');
+      const auth = await withTimeout(window.Pi.authenticate(['username','payments','wallet_address'],onIncompletePaymentFound),12000,'Pi login timed out. Please try again.');
       if (!auth?.user?.username || !auth.accessToken) throw new Error('Pi login did not return a valid session. Please try again.');
       currentAccessToken = auth.accessToken;
       const verified = await accountRequest('my-forest');
