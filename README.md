@@ -1,6 +1,6 @@
-# The Pioneer Forest Pi Testnet app — v0.9.6
+# The Pioneer Forest Pi Testnet app — v0.9.7 (local candidate)
 
-Based on v0.9.1b (`d3db6d5`). Deployment of v0.9.6 approved on 16 October 2026. Local validation is complete; genuine Pi/hosted storage smoke checks follow deployment.
+Built on the working v0.9.6 app. v0.9.7 adds the Testnet Welcome Reward and has not been deployed. Deployment requires explicit approval.
 
 ## Local preview
 
@@ -62,8 +62,15 @@ Each confirmed payment uses two small objects (receipt and final record). Reads 
 
 Entry HTML uses `no-store` response headers and script/style URLs contain content fingerprints. This prevents reuse after a client fetches the updated entry document; it cannot forcibly evict an old document already retained by Pi Browser or fix an unknown alternate launch URL. No browser history, tokens, or account records are cleared.
 
-My Forest has a collapsed Connection details section containing the current app version, verified username, a short hash of the Pi UID, and the actual record environment. It excludes access tokens and raw account IDs. This allows comparison of direct mobile/emulator/Sandbox sessions without guessing or combining records by username. The phone’s zero-history cause remains unconfirmed until those sessions can be compared.
+My Forest has a collapsed Connection details section containing the current app version, verified username, a short hash of the Pi UID, and the actual record environment. It excludes access tokens and raw account IDs. This allows comparison of direct mobile/emulator/Sandbox sessions without guessing or combining records by username. The user confirmed that force-stopping Pi Browser and opening the explicit v0.9.6 URL restored all 11 records on the phone, matching the emulator and Sandbox. The bare URL may still reopen a retained older page.
 
 Legacy payment verification shows per-record progress and retains the server failure reasons beside the verification button. Original browser records are preserved.
 
 Authenticated history reads use a unique request marker echoed by the server. A response for a previous read is rejected rather than displayed as current account totals. This adds no polling.
+
+
+## Testnet Welcome Reward (v0.9.7 candidate)
+
+0.2 Test Pi per verified Pioneer, claimed explicitly after Pi login, initially capped at 20 successful claims (4 Test Pi total, plus blockchain fees and the app wallet’s required reserve). Home contains Claim/Check controls; My Forest shows the received reward separately. Existing user-to-app history, contribution totals and real-world impact are unchanged. No purchase or support payment is required to claim.
+
+See [WELCOME_REWARD_REVIEW.md](WELCOME_REWARD_REVIEW.md) for configuration, recovery behavior, tests and deployment limits. No new Developer Portal settings have been applied. The approved legal text has not been edited; review its coverage of the new Testnet reward before wider rollout.

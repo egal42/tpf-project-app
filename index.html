@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#03170d" />
   <meta name="color-scheme" content="dark" />
-  <meta name="tpf-version" content="0.9.6" />
+  <meta name="tpf-version" content="0.9.7" />
   <title>The Pioneer Forest · Testnet</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="assets/tpf-logo.png" />
@@ -49,6 +49,14 @@
         <p class="eyebrow">ROOTED IN TRANSPARENCY</p><h1 id="home-title" tabindex="-1">Small actions.<br />Growing together.</h1>
         <p class="lead">The real forest grows through planting and public records. This app is where we test a simpler way to participate.</p>
         <section class="impact-panel" aria-label="Real TPF global impact"><p class="eyebrow">REAL TPF GLOBAL IMPACT</p><div class="stats"><div><strong data-global-trees>—</strong><span>Trees planted</span></div><div><strong data-global-co2>—</strong><span>kg estimated CO₂ capture</span></div></div><p class="tiny" data-impact-status>Loading the public TPF summary…</p><p class="tiny">Estimated capture over time, not CO₂ already removed. These are global project totals, separate from your Testnet activity.</p><button type="button" class="text-button" data-open-legal="transparency">Impact &amp; transparency</button></section>
+        <section class="info-block" aria-labelledby="welcome-reward-title">
+          <p class="eyebrow">TESTNET WELCOME REWARD</p><h2 id="welcome-reward-title">Start with 0.2 Test Pi.</h2>
+          <p>One welcome reward per Pioneer after Pi login. The initial round is limited to 20 successful claims. No donation or purchase is required.</p>
+          <p class="tiny">Test Pi only. This reward has no real-world planting or CO₂ impact.</p>
+          <p id="welcomeRewardStatus" class="status" role="status" aria-live="polite">Checking welcome reward availability…</p>
+          <button id="claimWelcomeRewardBtn" class="secondary" disabled>Claim 0.2 Test Pi</button>
+          <button id="refreshWelcomeRewardBtn" class="text-button">Check reward status</button>
+        </section>
         <div class="action-grid"><button class="primary" data-screen-target="support">Try Testnet support →</button><button class="secondary" data-screen-target="myforest">View My Forest</button></div>
       </section>
       <section class="app-screen" data-screen="support" aria-labelledby="support-title">
@@ -66,6 +74,10 @@
         <p class="eyebrow">YOUR PERSONAL ACTIVITY</p><h1 id="forest-title" tabindex="-1">My Forest.</h1><p id="profileName" class="lead"></p>
         <section class="impact-panel"><p class="eyebrow">YOUR CONFIRMED TESTNET ACCOUNT RECORDS</p><div class="stats personal-stats"><div><strong id="personalTotal">—</strong><span>Test Pi confirmed</span></div><div><strong id="personalCount">—</strong><span>Confirmed payments</span></div></div><p class="tiny" id="personalLatest">No completed payment recorded yet.</p></section>
         <p class="testnet-note">Your Test Pi activity does not represent planted trees or CO₂ capture. Personal real-world planting records are not linked to this app.</p>
+        <section class="info-block" aria-labelledby="forest-reward-title"><h2 id="forest-reward-title">Welcome reward</h2>
+          <p class="tiny">Test Pi received from the app is recorded separately from your support payments above.</p>
+          <p id="forestRewardStatus" role="status" aria-live="polite">Checking welcome reward…</p><div id="forestRewardRecord"></div>
+        </section>
         <h2>Payment history</h2><p class="tiny">Confirmed payments are saved to your Pi account record. Sign in on another device to see the same history. Clearing browser data does not delete these records.</p><p id="historyStatus" class="status" role="status" aria-live="polite"></p>
         <details><summary>Connection details</summary><p class="tiny" id="accountConnection">Account connection has not loaded.</p></details>
         <div id="historyList" class="history-list"></div><button class="text-button" id="refreshHistoryBtn">Refresh account history</button><div id="legacyNotice" class="warning hidden"><p id="legacyText"></p><p id="legacyResult" role="status" aria-live="polite"></p><button class="secondary" id="restoreLegacyBtn">Verify older saved payments</button></div>
@@ -231,7 +243,7 @@
       </p>
     </section></article></section>
 <!-- APP LEGAL END -->
-    <footer><span>Go Pi. Go Green. Go The Pioneer Forest.</span><div><button type="button" class="text-button" data-open-legal="privacy-policy">Privacy Policy</button><span aria-hidden="true"> · </span><button type="button" class="text-button" data-open-legal="terms-of-service">Terms of Service</button></div><small>v0.9.6 · Testnet development preview</small></footer>
+    <footer><span>Go Pi. Go Green. Go The Pioneer Forest.</span><div><button type="button" class="text-button" data-open-legal="privacy-policy">Privacy Policy</button><span aria-hidden="true"> · </span><button type="button" class="text-button" data-open-legal="terms-of-service">Terms of Service</button></div><small>v0.9.7 · Testnet development preview</small></footer>
     <noscript><p>JavaScript is required for Pi login and the app. </p></noscript>
   </main>
 </body>

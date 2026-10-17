@@ -1,6 +1,6 @@
 {
   "name": "tpf-project-app",
-  "version": "0.9.6",
+  "version": "0.9.7",
   "private": true,
   "scripts": {
     "start": "node scripts/local-server.js",
@@ -13,6 +13,7 @@
     "node": ">=22.12"
   },
   "dependencies": {
-    "@netlify/blobs": "11.1.4"
+    "@netlify/blobs": "11.1.4",
+    "@stellar/stellar-sdk": "17.2.1"
   }
 }

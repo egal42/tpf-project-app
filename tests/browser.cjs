@@ -32,7 +32,7 @@ async function pay(p,amount='0.1'){await section(p,'support');await p.locator('#
  await scenario('Pi login gate, server verification, SDK settings and four sections',async()=>{
   const p=await pageFor('gate');assert.equal(await p.locator('#app-shell').isVisible(),false);await login(p);assert.deepEqual(await p.evaluate(()=>__config),{version:'2.0',sandbox:true});assert.deepEqual(await p.evaluate(()=>__scopes),['username','payments']);assert.deepEqual(await p.locator('.nav-button').allTextContents(),['Home','Support','My Forest','About']);
   for(const name of ['support','myforest','about','home']){await section(p,name);assert(await p.locator('[data-screen="'+name+'"].active').isVisible());assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);}
-  await section(p,'myforest');assert.match(await p.locator('#accountConnection').textContent(),/App 0\.9\.6.*Account [a-f0-9]{12}/);assert.equal(await p.locator('#clearHistoryBtn').count(),0);assert.deepEqual(p.errors,[]);await p.context().close();
+  await section(p,'myforest');assert.match(await p.locator('#accountConnection').textContent(),/App 0\.9\.7.*Account [a-f0-9]{12}/);assert.equal(await p.locator('#clearHistoryBtn').count(),0);assert.deepEqual(p.errors,[]);await p.context().close();
  });
  await scenario('Rejected login or unavailable account service cannot bypass authenticated entry',async()=>{
   let p=await pageFor('rejected',{authError:true});await p.locator('#loginBtn').click();assert.equal(await p.locator('#app-shell').isVisible(),false);await p.context().close();
@@ -101,6 +101,25 @@ async function pay(p,amount='0.1'){await section(p,'support');await p.locator('#
   const first=await pageFor('cross-device');await login(first);await section(first,'myforest');assert.equal(await first.locator('#personalCount').innerText(),'0');await section(first,'home');
   const second=await pageFor('cross-device');await login(second);await pay(second,'1');await second.context().close();
   await first.evaluate(()=>{const oldNow=Date.now;Date.now=()=>oldNow()+61000;});await section(first,'myforest');await first.waitForFunction(()=>document.getElementById('personalCount').textContent==='1');assert.equal(await first.locator('#personalTotal').innerText(),'1');await first.context().close();
+ });
+ await scenario('Welcome reward is explicit, once-only, durable across devices and separate from contributions/impact',async()=>{
+  let p=await pageFor('reward-pioneer');let posts=0;p.on('request',r=>{if(r.url().includes('/welcome-reward')&&r.method()==='POST')posts++;});await login(p);await p.locator('#claimWelcomeRewardBtn:not([disabled])').waitFor();assert.equal(posts,0);
+  await p.locator('#claimWelcomeRewardBtn').click();await p.waitForFunction(()=>document.getElementById('claimWelcomeRewardBtn').textContent==='Reward received');assert.equal(posts,1);await section(p,'myforest');assert.match(await p.locator('#forestRewardRecord').innerText(),/0.2 Test Pi received/);assert.equal(await p.locator('#personalTotal').innerText(),'0');assert.equal(await p.locator('[data-global-trees]').last().innerText(),'1,096');
+  await pay(p,'1');assert.equal(await p.locator('#personalTotal').innerText(),'1');assert.match(await p.locator('#forestRewardRecord').innerText(),/0.2 Test Pi received/);await p.context().close();await stop();await start();
+  p=await pageFor('reward-pioneer');await login(p);await p.waitForFunction(()=>document.getElementById('claimWelcomeRewardBtn').textContent==='Reward received');await section(p,'myforest');assert.equal(await p.locator('#personalCount').innerText(),'1');assert.match(await p.locator('#forestRewardRecord').innerText(),/0.2 Test Pi received/);assert.deepEqual(p.errors,[]);await p.context().close();
+ });
+ await scenario('Lost reward response can be checked safely and does not create another claim',async()=>{
+  const p=await pageFor('reward-retry');await login(p);await p.locator('#claimWelcomeRewardBtn:not([disabled])').waitFor();let first=true;
+  await p.route('**/.netlify/functions/welcome-reward',async r=>{if(r.request().method()==='POST'&&first){first=false;await r.fetch();await r.fulfill({status:503,json:{error:'Confirmation response was lost. Check reward to continue.'}});}else await r.continue();});
+  await p.locator('#claimWelcomeRewardBtn').click();await p.waitForFunction(()=>document.getElementById('claimWelcomeRewardBtn').textContent==='Check reward');assert.match(await p.locator('#welcomeRewardStatus').innerText(),/response was lost/);await p.locator('#claimWelcomeRewardBtn').click();await p.waitForFunction(()=>document.getElementById('claimWelcomeRewardBtn').textContent==='Reward received');
+  await section(p,'myforest');assert.equal(await p.locator('#forestRewardRecord article').count(),1);assert.equal(await p.locator('#personalCount').innerText(),'0');await p.context().close();
+ });
+ await scenario('Reward service failure does not block login or existing Testnet support payments',async()=>{
+  const p=await pageFor('reward-unavailable');await p.route('**/.netlify/functions/welcome-reward*',r=>r.fulfill({status:503,json:{error:'Reward unavailable'}}));await login(p);await p.waitForFunction(()=>document.getElementById('welcomeRewardStatus').textContent==='Reward unavailable');assert(await p.locator('#claimWelcomeRewardBtn').isDisabled());await pay(p,'0.1');assert.equal(await p.locator('#personalTotal').innerText(),'0.1');assert.deepEqual(p.errors,[]);await p.context().close();
+ });
+ await scenario('A slow reward status read does not block support or sign-out and cannot leak across accounts',async()=>{
+  const p=await pageFor('reward-slow');let release;const held=new Promise(r=>release=r);
+  await p.route('**/.netlify/functions/welcome-reward*',async r=>{await held;try{await r.continue();}catch{}});await login(p);await section(p,'support');assert(await p.locator('#sdkPaymentBtn').isEnabled());assert(await p.locator('#signOutBtn').isEnabled());await p.locator('#signOutBtn').click();release();await p.waitForTimeout(100);assert.equal(await p.locator('#app-shell').isVisible(),false);assert.equal(await p.locator('#forestRewardRecord').innerText(),'');await p.context().close();
  });
  const p=await pageFor('preview-review');await p.screenshot({path:'tests/artifacts/welcome-mobile.png',fullPage:true});await login(p);
  for(const name of ['home','support','myforest','about']){await section(p,name);if(name==='myforest')await pay(p,'0.01');await p.evaluate(()=>scrollTo(0,0));await p.screenshot({path:'tests/artifacts/'+name+'-mobile.png',fullPage:true});}

@@ -15,11 +15,12 @@ const server = http.createServer(async (req,res) => {
     res.writeHead(result.statusCode,result.headers); res.end(result.body); return;
   }
   const action=url.pathname.split('/').pop();
-  if (preview && ((url.pathname.startsWith('/.netlify/functions/') && ['my-forest','approve-payment','complete-payment'].includes(action)) || url.pathname==='/__preview/create-payment')) {
+  if (preview && ((url.pathname.startsWith('/.netlify/functions/') && ['my-forest','approve-payment','complete-payment','welcome-reward'].includes(action)) || url.pathname==='/__preview/create-payment')) {
     try {
       let body='';
       for await (const part of req) {body+=part;if(body.length>4096){res.writeHead(413);res.end();return;}}
-      const result=await require('./preview-backend').handle(action,{httpMethod:req.method,headers:req.headers,body,readId:url.searchParams.get('read')});
+      const event={httpMethod:req.method,headers:req.headers,body,readId:url.searchParams.get('read'),deployContext:'local-preview'};
+      const result=action==='welcome-reward'?await require('./preview-reward')(event):await require('./preview-backend').handle(action,event);
       res.writeHead(result.statusCode,{...result.headers,'Cache-Control':'no-store'});res.end(result.body);
     }catch{res.writeHead(503,{'Content-Type':'application/json'});res.end(JSON.stringify({error:'Local preview storage is unavailable.'}));}
     return;

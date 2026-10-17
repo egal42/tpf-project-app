@@ -1,4 +1,4 @@
-/* v0.9.6: same Pi SDK sandbox, scopes, payment payload and server endpoints as v0.9.1b. */
+/* v0.9.7: same Pi SDK sandbox, scopes, payment payload and server endpoints as v0.9.1b. */
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
@@ -6,6 +6,7 @@
   const IMPACT_KEY = 'tpf_app_public_impact_v1', IMPACT_TTL = 6 * 60 * 60 * 1000;
   let currentUser = null, currentAccessToken = null, accountHistory = null, historyLoading = false, selectedAmount = 1, authenticating = false, paymentBusy = false, pendingPayment = null;
   let retryBusy = false, historyError = null, lastHistoryRead = 0, legacyBusy = false;
+  let rewardData=null,rewardError=null,rewardBusy=false,rewardClaimBusy=false,rewardRequestId=0;
   const format = n => Number(n).toLocaleString(undefined,{maximumFractionDigits:3});
   const date = value => { const d = new Date(value); return Number.isFinite(d.getTime()) ? d.toLocaleString() : 'Date unavailable'; };
   const status = message => { $('status').textContent = message; };
@@ -57,10 +58,11 @@
   }
   function setPaymentBusy(busy) {
     paymentBusy = busy;
-    $('sdkPaymentBtn').disabled = busy || !!pendingPayment;
-    $('signOutBtn').disabled = busy || retryBusy;
+    $('sdkPaymentBtn').disabled = busy || !!pendingPayment || rewardClaimBusy;
+    $('signOutBtn').disabled = busy || retryBusy || rewardClaimBusy;
     document.querySelectorAll('.amount-button').forEach(el => { el.disabled = busy || !!pendingPayment; });
     $('customAmount').disabled = busy || !!pendingPayment;
+    renderWelcomeReward();
   }
   function showPending() {
     $('pendingNotice').classList.toggle('hidden',!pendingPayment);
@@ -93,7 +95,7 @@
       $('welcomeName').textContent = 'Welcome, @'+currentUser.username+'.';
       $('screen-login').classList.add('hidden'); $('app-shell').classList.toggle('hidden',!!legalOrigin);
       $('browserWarning').classList.add('hidden');
-      showScreen(pendingPayment ? 'support' : 'home'); showPending();
+      showScreen(pendingPayment ? 'support' : 'home'); showPending(); loadWelcomeReward();
     } catch (error) { currentUser=null; currentAccessToken=null; accountHistory=null; status(error.message || 'Pi login failed. Please try again.'); $('browserWarning').classList.remove('hidden'); }
     finally { authenticating = false; $('loginBtn').disabled = false; }
   }
@@ -142,7 +144,7 @@
   }
   async function createPayment() {
     if (!currentUser) { status('Please log in with Pi first.'); return; }
-    if (paymentBusy || pendingPayment) return;
+    if (paymentBusy || pendingPayment || rewardClaimBusy) return;
     const amount = parseAmount();
     if (amount === null) { paymentStatus('Enter a valid positive Test Pi amount, with at most 7 decimal places.'); return; }
     const username = currentUser.username, startedAt = new Date().toISOString();
@@ -243,6 +245,31 @@
       if(token!==currentAccessToken)output.textContent='';
     }
   }
+  function renderWelcomeReward(){
+    const state=rewardData?.state;
+    const messages={eligible:'Welcome reward available: 0.2 Test Pi, once per Pioneer. '+(rewardData ? rewardData.successfulClaims+' of 20 claimed.' : ''),claimed:'Your 0.2 Test Pi welcome reward is confirmed.',pending:'Your welcome reward is pending. Check the same claim to continue safely.',exhausted:'All 20 welcome rewards have been claimed.',disabled:'The Testnet welcome reward is not enabled yet.',busy:'Another welcome reward is being confirmed. Please check again later.',identity_review:'A welcome claim exists for this Pi username. Account identity needs review.'};
+    const text=rewardError || messages[state] || 'Checking welcome reward availability…';
+    $('welcomeRewardStatus').textContent=text;$('forestRewardStatus').textContent=text;
+    const button=$('claimWelcomeRewardBtn');
+    button.textContent=rewardBusy?'Confirming reward…':state==='pending'?'Check reward':state==='claimed'?'Reward received':'Claim 0.2 Test Pi';
+    button.disabled=!currentUser||rewardBusy||paymentBusy||retryBusy||!!pendingPayment||!['eligible','pending'].includes(state);
+    $('refreshWelcomeRewardBtn').disabled=!currentUser||rewardBusy;
+    const record=rewardData?.record;
+    $('forestRewardRecord').replaceChildren();
+    if(record){const article=document.createElement('article');article.className='history-item';const title=document.createElement('strong');title.className='history-amount';title.textContent='0.2 Test Pi received';const detail=document.createElement('p');detail.className='tiny';detail.textContent='Confirmed welcome reward · Testnet only · '+date(record.dateIso);const ids=document.createElement('p');ids.className='tiny';ids.style.overflowWrap='anywhere';ids.textContent='Payment ID: '+record.paymentId+' · Transaction ID: '+record.txid;article.append(title,detail,ids);$('forestRewardRecord').append(article);}
+  }
+  async function loadWelcomeReward(claim=false){
+    if(!currentUser||rewardBusy)return;
+    if(claim&&(paymentBusy||retryBusy||pendingPayment))return;
+    const token=currentAccessToken,requestId=++rewardRequestId;rewardBusy=true;rewardClaimBusy=claim;rewardError=null;renderWelcomeReward();showPending();
+    try{
+      const data=await accountRequest('welcome-reward',claim?{}:undefined);
+      if(token!==currentAccessToken||requestId!==rewardRequestId)return;
+      if(data.schema!=='tpf_welcome_reward_v1'||data.network!=='Pi Testnet'||data.amount!=='0.2'||data.limit!==20)throw Error('Welcome reward response could not be verified.');
+      rewardData=data;
+    }catch(error){if(token===currentAccessToken&&requestId===rewardRequestId){rewardError=error.message;if(claim&&rewardData?.state==='eligible')rewardData={...rewardData,state:'pending'};}}
+    finally{if(token===currentAccessToken&&requestId===rewardRequestId){rewardBusy=false;rewardClaimBusy=false;renderWelcomeReward();showPending();}}
+  }
   function renderImpact(data,kind) {
     const impact = data?.impact;
     document.querySelectorAll('[data-global-trees]').forEach(el => { el.textContent = impact ? format(impact.trees) : '—'; });
@@ -272,10 +299,10 @@
     $('closeLegalBtn').addEventListener('click',closeLegal);
     window.addEventListener('popstate',()=>{if(legalPages.includes(legalHash()))openLegal(legalHash(),false);else restoreApp();});
     $('signOutBtn').addEventListener('click',() => {
-      if (paymentBusy || retryBusy) return;
+      if (paymentBusy || retryBusy || rewardClaimBusy) return;
       currentUser = null; currentAccessToken = null; accountHistory = null; historyError = null; pendingPayment = null; TPF.clearSession();
       $('app-shell').classList.add('hidden'); $('screen-login').classList.remove('hidden');
-      $('historyList').replaceChildren(); $('legacyResult').textContent=''; showPending(); status('Signed out. Pi login is required to enter.'); $('loginBtn').focus();
+      $('historyList').replaceChildren(); $('legacyResult').textContent=''; rewardData=null; rewardError=null; rewardRequestId++; rewardBusy=false; rewardClaimBusy=false; $('forestRewardRecord').replaceChildren(); renderWelcomeReward(); showPending(); status('Signed out. Pi login is required to enter.'); $('loginBtn').focus();
     });
     document.querySelectorAll('[data-screen-target]').forEach(el => el.addEventListener('click',() => showScreen(el.dataset.screenTarget)));
     document.querySelectorAll('.amount-button').forEach(el => el.addEventListener('click',() => {
@@ -284,7 +311,9 @@
     }));
     $('customAmount').addEventListener('input',updateAmount);
     $('sdkPaymentBtn').addEventListener('click',createPayment); $('retryPaymentBtn').addEventListener('click',retryPayment);
-    $('refreshHistoryBtn').addEventListener('click',loadAccountHistory);
+    $('refreshHistoryBtn').addEventListener('click',()=>{loadAccountHistory();loadWelcomeReward();});
+    $('claimWelcomeRewardBtn').addEventListener('click',()=>loadWelcomeReward(true));
+    $('refreshWelcomeRewardBtn').addEventListener('click',()=>loadWelcomeReward());
     $('restoreLegacyBtn').addEventListener('click',restoreLegacy);
     loadImpact();
     // Short visual transition only; never waits for the network or for Pi login.
