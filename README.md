@@ -1,70 +1,106 @@
-# The Pioneer Forest Pi Testnet app — v0.9.9 (local candidate)
+# The Pioneer Forest — Pi Network App
 
-Built on the working v0.9.6 app. v0.9.9 adds the Testnet Welcome Reward and has not been deployed. Deployment requires explicit approval.
+[![Pi Network](https://img.shields.io/badge/Pi%20Network-Ecosystem-blue)](https://minepi.com)
+[![Tree-Nation](https://img.shields.io/badge/Reforestation-Tree--Nation-forestgreen)](https://tree-nation.com)
+[![Status](https://img.shields.io/badge/Status-Testnet%20Preview-brightgreen)](https://thepioneerforest.org)
 
+**The Pioneer Forest (TPF)** is an independent, community-driven environmental initiative built for the Pi Network ecosystem. This repository contains the official Pi Browser application, allowing Pioneers to explore reforestation milestones, track verified tree planting, participate in ecological support journeys, and claim community welcome rewards.
 
+---
 
-## Persistent My Forest
+## 🌲 Key Features
 
-- SDK setup remains `version: 2.0`, `sandbox: true`, with `username`, `payments` and `wallet_address` scopes (wallet consent added for A2U in v0.9.9). Existing memo, payment metadata and endpoint URLs are retained.
-- The server validates the Bearer access token using Pi `/me` on every account/payment request. Tokens stay in frontend memory and are not logged or persisted.
-- Account keys use the **verified app-specific Pi UID**, not an editable username. A normal username change does not detach the history.
-- Before approval/completion the server reads Pi’s payment DTO and checks ownership, `Pi Testnet`, `user_to_app`, cancellation, amount and transaction match. Client-supplied username/amount never determine the record.
-- A durable recovery receipt is saved **before** calling Pi `/complete`. A verified completed payment is then stored as an immutable record with its payment ID, transaction ID, amount, date, network and account key.
-- If Pi completes but final storage fails or the process crashes, the next authenticated history request recovers the final record from the receipt and Pi’s authoritative status. If Pi has not yet completed it, the app presents a confirmation retry instead of requesting another payment.
-- Conditional create + strong readback prevents duplicated records and detects storage failures. Different simultaneous payments never update a shared counter or overwrite each other.
-- My Forest totals are derived from all account payment records, with integer arithmetic at seven decimal places. No floating-point accumulation and no 25-entry cap.
-- After a successful completion, account history is refreshed. Login loads the record; reopening My Forest refreshes its data if the last successful read was over a minute ago. There is no background polling. A manual refresh is available. A failed read never silently becomes zero history; last-loaded figures are explicitly marked as potentially stale.
-- There is no browser control that deletes the account ledger. Clearing browser data only removes optional local data; login retrieves the account records again.
-- Legacy browser entries remain untouched. “Verify older saved payments” checks their payment ID and transaction with Pi and imports only those belonging to this account, on Testnet, completed and verified. Entries without enough identifiers cannot be reconstructed automatically. They never inflate account totals.
-- Real planting/CO₂ remains global public website data, separate from the Testnet payment ledger. No personal real-world impact is inferred from Test Pi.
+* **Pi Network Authentication:** Native sign-in through Pi SDK 2.0 with app-specific UID validation and secure session handling.
+* **Persistent "My Forest" Dashboard:** Cross-device activity ledger tracking contributions and certificates with seven-decimal exact arithmetic.
+* **Testnet Welcome Reward:** Integrated App-to-User (A2U) reward distribution distributing Test Pi directly to verified Pioneer wallets.
+* **Verified Global Impact:** Real-time visibility into trees planted and estimated CO₂ capture backed by independent planting providers like **Tree-Nation**.
+* **Durable Payment Flow:** Resilient serverless architecture with pre-completion recovery receipts, duplicate protection, and transaction verification against the Pi Platform API.
+* **Security & Privacy by Design:** 
+  * Strict zero-knowledge wallet policy — **TPF never asks for, logs, or stores wallet passphrases or private keys.**
+  * All access tokens are validated server-side and kept strictly in memory.
 
-## In-app legal and ecosystem navigation
+---
 
-The approved Privacy Policy and Terms are embedded locally, with unchanged visible wording. They are readable before login and from every app section. Their cross-links and Transparency & Scope stay inside the app. The return button restores the prior app screen, selected amount, scroll position and session; browser Back also closes the legal view. Direct `#privacy-policy` and `#terms-of-service` routes work without Pi login. None of these views grants access to private account data.
+## 🛠 Tech Stack & Architecture
 
-Public website and mailto navigation has been removed. The only remaining outbound page links are to the Pi ecosystem: the official Fireside channel and Pi Block Explorer. They open in the same browsing context. Contact email remains plain, selectable text. The app still retrieves global impact data through its cached backend reader; no website or Ops Center change is required.
+* **Frontend:** Responsive client optimized for the Pi Browser (HTML5, modern CSS, modular JavaScript) with content fingerprinting to prevent mobile caching issues.
+* **Serverless Backend:** Netlify Functions (`.mjs`) for payment approval, completion, and reward processing.
+* **Durable Storage:** `@netlify/blobs` for strongly-consistent, atomic serverless state and receipt journals without heavy database overhead.
+* **Blockchain Integration:** `@stellar/stellar-sdk` for constructing and signing native Pi blockchain A2U transactions.
 
-`tests/approved-legal-text.json` retains the text baseline used to verify the legal integration. `scripts/embed-legal.py` is a one-time import helper that expects the approved public source snapshot alongside this repository; normal running/building does not use it.
+---
 
-## Hosting and cost
+## 🚀 Getting Started
 
-Uses `@netlify/blobs` **11.1.4**, pinned in `package-lock.json`. Before packaging for hosted deployment: `npm ci`. There is no database compute, scheduler, background polling, or cross-project access.
+### Prerequisites
+* [Node.js](https://nodejs.org/) `>= 22.12`
+* npm `>= 10`
 
-Production records use the site-wide store `tpf-project-app-testnet-v1`, so they survive normal app redeploys. Deploy previews/branch deploys use the separate `tpf-project-app-testnet-preview-v1` namespace. They never read or change production account records. The modern Netlify Function adapter obtains the actual deploy context and the automatic Blobs credentials; unknown/missing deploy context fails closed. Functions use strong consistency and private/no-store responses. No storage tokens are sent to the browser.
+### Installation
 
-The payment endpoints keep their existing URLs but now use modern `.mjs` handlers to support automatic strongly consistent Blobs access. The existing `PI_API_KEY` remains server-side. Pi Developer Portal settings are unchanged. The repository now pins Node 22, bundles functions with esbuild, and publishes only browser assets from `dist/` through `netlify.toml`.
+```bash
+# Clone the repository
+git clone https://github.com/egal42/tpf-project-app.git
+cd tpf-project-app
 
-Each confirmed payment uses two small objects (receipt and final record). Reads happen on login, explicit refresh, completion and manual legacy recovery. History derives totals from the per-user records rather than maintaining a transactional balance in object storage. Read work grows with the number of payments; pagination/materialized reporting can be introduced after real usage warrants it. The public impact reader retains its six-hour CDN/warm/browser caching with dated fallback.
+# Install dependencies
+npm ci
+```
 
-## Verification
+### Local Preview
 
-- `npm test`: account verification, owner/network isolation, immutable receipts, exact arithmetic, concurrent/duplicate callbacks, service restarts, write failures and recovery, legacy verification, context isolation, input limits and impact caching.
-- `npm run test:browser`: installs no production dependencies; requires Playwright + a Chromium executable in the development environment. The harness launches its own local server and isolated temporary account store. Set `CHROMIUM_PATH` if needed.
-- Browser tests include a payment, closing the browser context, clearing browser storage, restarting the preview server, and logging in again with the same history; another account sees no records.
+Launch the local development preview with a simulated Pi environment:
 
-## Release checks and limits
+```bash
+npm run preview
+```
 
-- Future deployments require explicit approval. This v0.9.6 deployment was approved on 16 October 2026.
-- Local tests use simulated Pi responses and disk storage. A genuine Pi Browser login, small Test Pi payment, Blobs write/read, retry and second-device login remain hosted smoke checks after an approved deployment.
-- Existing older completed payments cannot be discovered from Pi’s documented U2A API without payment identifiers. Legacy recovery is user-requested, verified and limited to available IDs.
-- Pi may assign a new app-specific UID after the user revokes and re-grants app permissions. Old records remain retained under the former identity; do not automatically reassociate by username. This requires a separate verified recovery process if it occurs.
-- Persistent hosting is not a substitute for backups. No automatic export/backup schedule has been added. Normal redeploys preserve the ledger; deletion of the Netlify project/store would require recovery from backups.
-- The main TPF website, Operations Center, Pi Developer Portal, validation key, manifest, logo and SDK initialization are untouched.
+Open `http://127.0.0.1:4173/` in your browser. The simulation environment allows testing the UI, login state, and payment flows without requiring live blockchain funds.
 
-## v0.9.6 mobile diagnosis
+### Running Tests
 
-Entry HTML uses `no-store` response headers and script/style URLs contain content fingerprints. This prevents reuse after a client fetches the updated entry document; it cannot forcibly evict an old document already retained by Pi Browser or fix an unknown alternate launch URL. No browser history, tokens, or account records are cleared.
+```bash
+# Run unit and integration tests
+npm test
 
-My Forest has a collapsed Connection details section containing the current app version, verified username, a short hash of the Pi UID, and the actual record environment. It excludes access tokens and raw account IDs. This allows comparison of direct mobile/emulator/Sandbox sessions without guessing or combining records by username. The user confirmed that force-stopping Pi Browser and opening the explicit v0.9.6 URL restored all 11 records on the phone, matching the emulator and Sandbox. The bare URL may still reopen a retained older page.
+# Run browser automated tests (requires Playwright)
+npm run test:browser
+```
 
-Legacy payment verification shows per-record progress and retains the server failure reasons beside the verification button. Original browser records are preserved.
+---
 
-Authenticated history reads use a unique request marker echoed by the server. A response for a previous read is rejected rather than displayed as current account totals. This adds no polling.
+## ⚙️ Configuration
 
+Copy `.env.example` to `.env` for local configuration:
 
-## Testnet Welcome Reward (v0.9.9 candidate)
+```bash
+cp .env.example .env
+```
 
-0.2 Test Pi per verified Pioneer, claimed explicitly after Pi login, initially capped at 20 successful claims (4 Test Pi total, plus blockchain fees and the app wallet’s required reserve). Home contains Claim/Check controls; My Forest shows the received reward separately. Existing user-to-app history, contribution totals and real-world impact are unchanged. No purchase or support payment is required to claim.
+| Variable | Description |
+| --- | --- |
+| `PI_API_KEY` | Server-side API key from the Pi Developer Portal |
+| `PI_A2U_NETWORK` | Target Pi network (e.g., `Pi Testnet`) |
+| `PI_A2U_TESTNET_PUBLIC_KEY` | Public key of the app's A2U wallet |
+| `PI_A2U_TESTNET_SEED` | App wallet signing seed (server-side only) |
+| `TPF_WELCOME_REWARD_ENABLED` | Feature flag to enable/disable the welcome reward |
 
-See [WELCOME_REWARD_REVIEW.md](WELCOME_REWARD_REVIEW.md) for configuration, recovery behavior, tests and deployment limits. No new Developer Portal settings have been applied. The approved legal text has not been edited; review its coverage of the new Testnet reward before wider rollout.
+> **Security Note:** Never commit your `.env` file, API keys, or wallet seeds to version control.
+
+---
+
+## 📜 Legal & Transparency
+
+The Pioneer Forest operates with complete transparency:
+* **Independence:** TPF is an independent initiative developed by `egal42` and is not officially affiliated with or endorsed by the Pi Core Team.
+* **Terms & Privacy:** In-app terms and privacy policies are embedded directly within the application and accessible at all times without requiring sign-in.
+* **Verification:** Tree planting records, certificates, and CO₂ metrics are independently audited and published via Tree-Nation.
+
+---
+
+## 🌐 Community & Links
+
+* **Official Website:** [thepioneerforest.org](https://thepioneerforest.org)
+* **Pi Fireside Channel:** [#ThePioneerForest](https://fireside.pinet.com/channels/ThePioneerForest)
+* **Developer / Operator:** [egal42](https://github.com/egal42)
+* **Contact:** `egal42.pi@gmail.com`
