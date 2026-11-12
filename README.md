@@ -1,106 +1,61 @@
 # The Pioneer Forest — Pi Network App
 
-[![Pi Network](https://img.shields.io/badge/Pi%20Network-Ecosystem-blue)](https://minepi.com)
+[![Pi Network](https://img.shields.io/badge/Pi%20Network-Community%20App-blue)](https://minepi.com)
 [![Tree-Nation](https://img.shields.io/badge/Reforestation-Tree--Nation-forestgreen)](https://tree-nation.com)
-[![Status](https://img.shields.io/badge/Status-Testnet%20Preview-brightgreen)](https://thepioneerforest.org)
+[![Website](https://img.shields.io/badge/Website-thepioneerforest.org-brightgreen)](https://thepioneerforest.org)
+[![Environment](https://img.shields.io/badge/Environment-Pi%20Testnet-orange)](https://thepioneerforest.org)
 
-**The Pioneer Forest (TPF)** is an independent, community-driven environmental initiative built for the Pi Network ecosystem. This repository contains the official Pi Browser application, allowing Pioneers to explore reforestation milestones, track verified tree planting, participate in ecological support journeys, and claim community welcome rewards.
+**The Pioneer Forest (TPF)** is an independent, community-driven environmental initiative built for the Pi Network ecosystem.
 
----
-
-## 🌲 Key Features
-
-* **Pi Network Authentication:** Native sign-in through Pi SDK 2.0 with app-specific UID validation and secure session handling.
-* **Persistent "My Forest" Dashboard:** Cross-device activity ledger tracking contributions and certificates with seven-decimal exact arithmetic.
-* **Testnet Welcome Reward:** Integrated App-to-User (A2U) reward distribution distributing Test Pi directly to verified Pioneer wallets.
-* **Verified Global Impact:** Real-time visibility into trees planted and estimated CO₂ capture backed by independent planting providers like **Tree-Nation**.
-* **Durable Payment Flow:** Resilient serverless architecture with pre-completion recovery receipts, duplicate protection, and transaction verification against the Pi Platform API.
-* **Security & Privacy by Design:** 
-  * Strict zero-knowledge wallet policy — **TPF never asks for, logs, or stores wallet passphrases or private keys.**
-  * All access tokens are validated server-side and kept strictly in memory.
+This repository hosts the source code for the official **Pi Browser application**, maintained and published in the open to provide full transparency, verifiable security, and open accounting for Pioneers and the broader community.
 
 ---
 
-## 🛠 Tech Stack & Architecture
+## 🌲 About The App
 
-* **Frontend:** Responsive client optimized for the Pi Browser (HTML5, modern CSS, modular JavaScript) with content fingerprinting to prevent mobile caching issues.
-* **Serverless Backend:** Netlify Functions (`.mjs`) for payment approval, completion, and reward processing.
-* **Durable Storage:** `@netlify/blobs` for strongly-consistent, atomic serverless state and receipt journals without heavy database overhead.
-* **Blockchain Integration:** `@stellar/stellar-sdk` for constructing and signing native Pi blockchain A2U transactions.
+The app runs natively within the **Pi Browser** mobile environment, connecting community participation on the Pi Network with real-world ecological restoration.
 
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-* [Node.js](https://nodejs.org/) `>= 22.12`
-* npm `>= 10`
-
-### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/egal42/tpf-project-app.git
-cd tpf-project-app
-
-# Install dependencies
-npm ci
-```
-
-### Local Preview
-
-Launch the local development preview with a simulated Pi environment:
-
-```bash
-npm run preview
-```
-
-Open `http://127.0.0.1:4173/` in your browser. The simulation environment allows testing the UI, login state, and payment flows without requiring live blockchain funds.
-
-### Running Tests
-
-```bash
-# Run unit and integration tests
-npm test
-
-# Run browser automated tests (requires Playwright)
-npm run test:browser
-```
+* **Pi Authentication (SDK 2.0):** Native Pioneer sign-in using verified, app-specific Pi UIDs and requested scopes (`username`, `payments`, `wallet_address`).
+* **Persistent "My Forest" Ledger:** A tamper-resistant personal activity record tracking community support with exact 7-decimal accounting, accessible across devices.
+* **Testnet Welcome Reward:** An automated App-to-User (A2U) token distribution mechanism built with native Pi blockchain transaction signing (`@stellar/stellar-sdk`) to reward participating Pioneers directly to their non-custodial wallet.
+* **Real-World Impact Sync:** Real-time visibility into global planting totals and estimated CO₂ capture, linked to verified planting records from independent providers like **Tree-Nation**.
 
 ---
 
-## ⚙️ Configuration
+## 🛡️ Security & Privacy Guarantees
 
-Copy `.env.example` to `.env` for local configuration:
+Trust and safety are foundational to The Pioneer Forest:
 
-```bash
-cp .env.example .env
-```
-
-| Variable | Description |
-| --- | --- |
-| `PI_API_KEY` | Server-side API key from the Pi Developer Portal |
-| `PI_A2U_NETWORK` | Target Pi network (e.g., `Pi Testnet`) |
-| `PI_A2U_TESTNET_PUBLIC_KEY` | Public key of the app's A2U wallet |
-| `PI_A2U_TESTNET_SEED` | App wallet signing seed (server-side only) |
-| `TPF_WELCOME_REWARD_ENABLED` | Feature flag to enable/disable the welcome reward |
-
-> **Security Note:** Never commit your `.env` file, API keys, or wallet seeds to version control.
+* **Non-Custodial:** The app **never** asks for, accesses, logs, or stores your 24-word Pi Wallet passphrase or private keys. All transaction authorizations happen strictly within the official Pi Wallet interface.
+* **Server-Verified Sessions:** User authentication tokens are validated directly against the official Pi Platform API (`/v2/me`) and kept strictly in memory.
+* **Durable Payment Protection:** Serverless payment verification utilizes pre-completion recovery receipts and duplicate-payment fences to protect against lost network requests or double-spends.
+* **Privacy-First:** Zero invasive third-party trackers or cross-site tracking scripts.
 
 ---
 
-## 📜 Legal & Transparency
+## 📱 How Pioneers Access The App
 
-The Pioneer Forest operates with complete transparency:
-* **Independence:** TPF is an independent initiative developed by `egal42` and is not officially affiliated with or endorsed by the Pi Core Team.
-* **Terms & Privacy:** In-app terms and privacy policies are embedded directly within the application and accessible at all times without requiring sign-in.
-* **Verification:** Tree planting records, certificates, and CO₂ metrics are independently audited and published via Tree-Nation.
+Because this is a dedicated Web3 application integrated with the Pi blockchain, **it is designed to run exclusively inside the Pi Browser mobile app**:
+
+1. Open the **Pi Browser** application on your mobile device.
+2. Navigate to the registered TPF app URL (or access it directly through the Pi Developer Portal / Ecosystem directory).
+3. Sign in with your Pi account when prompted.
+
+*(Opening the application outside the Pi Browser in a standard desktop or mobile browser will prompt you to reopen it within the Pi Browser to access wallet and authentication features.)*
 
 ---
 
-## 🌐 Community & Links
+## 📜 Independence & Notice
+
+* **Independent Project:** The Pioneer Forest is an independent community initiative created and operated by **egal42**. It is not officially affiliated with or endorsed by the Pi Core Team.
+* **Participation Notice:** Testnet features, Test Pi transactions, and community rewards are for testing participation flows and do not represent financial investments or real-world monetary value.
+* **Legal & Transparency:** Full terms of service, privacy disclosures, and transparency methodology are embedded directly within the app and accessible at all times.
+
+---
+
+## 🌐 Project Links & Community
 
 * **Official Website:** [thepioneerforest.org](https://thepioneerforest.org)
-* **Pi Fireside Channel:** [#ThePioneerForest](https://fireside.pinet.com/channels/ThePioneerForest)
-* **Developer / Operator:** [egal42](https://github.com/egal42)
-* **Contact:** `egal42.pi@gmail.com`
+* **Pi Fireside Forum:** [#ThePioneerForest](https://fireside.pinet.com/channels/ThePioneerForest)
+* **Creator / Developer:** [egal42](https://github.com/egal42)
+* **Enquiries:** `egal42.pi@gmail.com`
