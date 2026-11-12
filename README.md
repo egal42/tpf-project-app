@@ -2,13 +2,7 @@
 
 Built on the working v0.9.6 app. v0.9.9 adds the Testnet Welcome Reward and has not been deployed. Deployment requires explicit approval.
 
-## Local preview
 
-Requires Node.js **22.12 or later**. Double-click `START-PREVIEW.cmd` on Windows, or run `npm run preview`, then open http://127.0.0.1:4173/.
-
-The preview simulates Pi login and Pi’s API. It runs the actual account/payment application service and saves its simulated account records to `.local-preview/` on this computer. Records survive browser clearing, another browser, and restarting the server. No Pi API or wallet transfer occurs. Preview data is not included in Git or the download package. The live impact reader uses the existing public TPF summary, cached without polling. The inline/chat preview is an independent UI simulation; it cannot connect to the account backend.
-
-`npm start` serves the real SDK frontend for inspection but does not allow real local account/payment API requests. Real Pi integration uses the existing configured Pi Browser/Sandbox and Netlify environment. Developer Portal settings are unchanged.
 
 ## Persistent My Forest
 
